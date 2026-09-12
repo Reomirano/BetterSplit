@@ -1,7 +1,5 @@
 streamlit
-opencv-python-headless
-pyzbar
+streamlit-qrcode-scanner
 requests
 beautifulsoup4
 pandas
-streamlit-camera-input-live
