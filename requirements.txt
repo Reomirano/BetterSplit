@@ -1,0 +1,7 @@
+streamlit
+opencv-python-headless
+pyzbar
+requests
+beautifulsoup4
+pandas
+streamlit-camera-input-live
