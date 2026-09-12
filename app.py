@@ -1,42 +1,28 @@
-import cv2
-import numpy as np
 import pandas as pd
-from pyzbar.pyzbar import decode
 import requests
 from bs4 import BeautifulSoup
 import streamlit as st
+from streamlit_qrcode_scanner import qrcode_scanner
 
-st.title("Real-time Skeniranje i Scraping QR Kodova sa Računa")
-st.write("Umeri kameru ka QR kodu sa fiskalnog računa.")
+st.title("Pravi Real-time Skeniranje QR Kodova")
+st.write(
+    "Umeri kameru ka QR kodu – skener će ga automatski uhvatiti čim se pojavi"
+    " u kadru."
+)
 
 if "scanned_url" not in st.session_state:
   st.session_state.scanned_url = None
 
-camera_image = st.camera_input("Uključi kameru")
+# Pravi live stream skener u pretraživaču
+qr_code = qrcode_scanner(key="qrcode_scanner")
 
-if camera_image is not None:
-  bytes_data = camera_image.getvalue()
-  np_arr = np.frombuffer(
-      bytes_data, np.pybytes if hasattr(np, "pybytes") else np.uint8  # type: ignore
-  )
-  frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-  decoded_objects = decode(frame)
-
-  if decoded_objects:
-    for obj in decoded_objects:
-      qr_data = obj.data.decode("utf-8")
-
-      if qr_data.startswith("http://") or qr_data.startswith("https://"):
-        if st.session_state.scanned_url != qr_data:
-          st.session_state.scanned_url = qr_data
-          st.success(
-              f"Uspešno detektovan link: [Otvori link]({qr_data})"
-          )
-      else:
-        st.warning(f"Sadržaj QR koda nije URL: {qr_data}")
+if qr_code:
+  if qr_code.startswith("http://") or qr_code.startswith("https://"):
+    if st.session_state.scanned_url != qr_code:
+      st.session_state.scanned_url = qr_code
+      st.success(f"Uspešno detektovan link iz kadra!")
   else:
-    st.info("QR kod nije pronađen u kadru. Pomerite kameru bliže.")
+    st.warning(f"Sadržaj QR koda nije URL: {qr_code}")
 
 if st.session_state.scanned_url:
   st.subheader("Rezultati Scraping-a sa stranice:")
