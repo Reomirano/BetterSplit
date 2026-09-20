@@ -29,7 +29,7 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA TAMNO ZELENU TEMU I MODERAN DIZAJN ---
+# --- CUSTOM CSS ZA TAMNO ZELENU TEMU ---
 st.markdown("""
     <style>
     .stApp {
@@ -64,31 +64,6 @@ st.markdown("""
     div.stButton > button[kind="primary"] {
         font-size: 1.65rem !important;
         padding: 0.9rem 1.5rem !important;
-    }
-
-    /* Stilizovanje radio dugmića (Metoda podele) u kartice */
-    div[data-baseweb="radio"] {
-        gap: 15px;
-    }
-    div[data-baseweb="radio"] label {
-        background-color: #1b4332 !important;
-        border: 1px solid #2d6a4f !important;
-        border-radius: 10px !important;
-        padding: 12px 20px !important;
-        font-size: 1.25rem !important;
-        font-weight: 600 !important;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        flex: 1;
-        text-align: center;
-    }
-    div[data-baseweb="radio"] label:hover {
-        background-color: #2d6a4f !important;
-        border-color: #52b788 !important;
-    }
-    /* Sakrivanje standardnih radio kružića da izgledaju kao čiste kartice */
-    div[data-baseweb="radio"] input[type="radio"] {
-        display: none;
     }
 
     /* Input polja i tekstualna polja sa tamno zelenom nijansom */
@@ -198,9 +173,9 @@ suma_ukupno = v_racun + v_dostava
 st.metric(label="Ukupno", value=f"{formatiraj_broj_sa_tackom(suma_ukupno)} RSD")
 st.divider()
 
-# Veći font za naslov metoda podele
+# Korišćenje st.pills komponenti umesto radio dugmića za lepši izgled kartica
 st.markdown('<p style="font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; color: #ffffff;">Metoda podele:</p>', unsafe_allow_html=True)
-nacin = st.radio("Metoda podele:", ["Ravnopravno", "Ručni unos"], horizontal=True, label_visibility="collapsed", key=f"nacin_{sufiks}")
+nacin = st.pills("Metoda podele:", ["Ravnopravno", "Ručni unos"], default="Ravnopravno", label_visibility="collapsed", key=f"nacin_{sufiks}")
 
 finalni_dugovi = {}
 validna_podela = False
