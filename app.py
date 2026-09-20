@@ -30,6 +30,23 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
+# --- CUSTOM CSS ZA ATRAKTIVNIJI IZGLED ---
+st.markdown("""
+    <style>
+    .stButton button {
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+    }
+    .stButton button:hover {
+        transform: translateY(-1px);
+    }
+    div[data-testid="stMetricValue"] {
+        font-size: 1.8rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 if "reset_kljuc" not in st.session_state:
     st.session_state.reset_kljuc = 0
 if 'clanovi_univerzalni' not in st.session_state:
@@ -49,27 +66,29 @@ with st.expander("📖 Kako ovo radi?"):
     """)
 
 st.subheader("⚙️ Podaci o primaocu")
-col_p1, col_p2 = st.columns(2)
-moje_ime = col_p1.text_input("Primalac:", value="", key="user_name", placeholder="Ime i prezime")
 
-# Ovde je sada text_input umesto number_input (nema +/- strelica, čisto polje)
-moj_racun_unos = col_p2.text_input(
-    "Broj računa primaoca:", 
-    value="", 
-    key="user_bank", 
-    placeholder="npr. 160-12345678999-12"
-)
+with st.container(border=True):
+    col_p1, col_p2 = st.columns(2)
+    moje_ime = col_p1.text_input("Primalac:", value="", key="user_name", placeholder="Ime i prezime")
 
-# Automatsko čišćenje unosa da ostanu samo cifre
+    moj_racun_unos = col_p2.text_input(
+        "Broj računa primaoca:", 
+        value="", 
+        key="user_bank", 
+        placeholder="npr. 160-12345678999-12"
+    )
+
 moj_racun = re.sub(r'\D', '', moj_racun_unos)
 
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "unesite račun"
 
 st.markdown(f"""
-    <p style="font-size: 1.1rem; font-weight: 500; margin-top: 5px; margin-bottom: 0; color: gray;">
-        Validan račun: <b>{prikaz_racuna}</b>
-    </p>
+    <div style="padding: 8px 12px; background-color: rgba(128, 128, 128, 0.08); border-radius: 6px; border-left: 4px solid #808080; margin-top: 5px; margin-bottom: 5px;">
+        <span style="font-size: 1rem; font-weight: 500; color: gray;">
+            Validan račun: <b style="color: inherit;">{prikaz_racuna}</b>
+        </span>
+    </div>
 """, unsafe_allow_html=True)
 
 st.divider()
@@ -84,13 +103,14 @@ if st.button("🔄 Novi unos", use_container_width=True, type="primary"):
     st.rerun()
 
 st.subheader("✍️ Podaci o trošku")
-c1, c2 = st.columns(2)
-v_racun = c1.number_input("Iznos sa računa (RSD):", min_value=0, value=0, step=1, format="%d", key=f"racun_num_{sufiks}")
-v_dostava = c2.number_input("Dostava (RSD):", min_value=0, value=0, step=1, format="%d", key=f"dostava_num_{sufiks}")
+with st.container(border=True):
+    c1, c2 = st.columns(2)
+    v_racun = c1.number_input("Iznos sa računa (RSD):", min_value=0, value=0, step=1, format="%d", key=f"racun_num_{sufiks}")
+    v_dostava = c2.number_input("Dostava (RSD):", min_value=0, value=0, step=1, format="%d", key=f"dostava_num_{sufiks}")
 
 suma_ukupno = v_racun + v_dostava
 
-st.markdown(f"### Ukupno: {formatiraj_broj_sa_tackom(suma_ukupno)} RSD")
+st.metric(label="Ukupno", value=f"{formatiraj_broj_sa_tackom(suma_ukupno)} RSD")
 st.divider()
 
 nacin = st.radio("Metoda podele:", ["Ravnopravno", "Ručni unos"], horizontal=True, key=f"nacin_{sufiks}")
@@ -99,14 +119,15 @@ finalni_dugovi = {}
 validna_podela = False
 
 if nacin == "Ravnopravno":
-    broj_ljudi = st.number_input("Ukupan broj osoba:", min_value=1, value=2, step=1, key=f"br_ljudi_{sufiks}")
-    if broj_ljudi > 1:
-        po_osobi = suma_ukupno / broj_ljudi
-        po_osobi_zaokruzeno = round(po_osobi, 2)
-        po_osobi_str = "{:.2f}".format(po_osobi_zaokruzeno).replace('.', ',')
-        st.info(f"Po osobi: **{po_osobi_str} RSD**")
-        finalni_dugovi["Zajednički"] = po_osobi_zaokruzeno
-        validna_podela = True
+    with st.container(border=True):
+        broj_ljudi = st.number_input("Ukupan broj osoba:", min_value=1, value=2, step=1, key=f"br_ljudi_{sufiks}")
+        if broj_ljudi > 1:
+            po_osobi = suma_ukupno / broj_ljudi
+            po_osobi_zaokruzeno = round(po_osobi, 2)
+            po_osobi_str = "{:.2f}".format(po_osobi_zaokruzeno).replace('.', ',')
+            st.info(f"Po osobi: **{po_osobi_str} RSD**")
+            finalni_dugovi["Zajednički"] = po_osobi_zaokruzeno
+            validna_podela = True
 
 else:
     def dodaj_direktno():
@@ -122,52 +143,53 @@ else:
                 st.session_state[kljuc_multi] = trenutno_selektovani
         st.session_state.novo_ime_input = ""
 
-    st.text_input("Dodaj učesnika na listu (potvrdi na Enter):", key="novo_ime_input", on_change=dodaj_direktno)
-    
-    sortirani = sorted(st.session_state.clanovi_univerzalni)
-    
-    if sortirani:
-        odabrani = st.multiselect("Ko učestvuje:", options=sortirani, key=f"ucesnici_{sufiks}")
+    with st.container(border=True):
+        st.text_input("Dodaj učesnika na listu (potvrdi na Enter):", key="novo_ime_input", on_change=dodaj_direktno)
         
-        if odabrani:
-            br_ucesnika = len(odabrani)
-            fiksna_dostava = v_dostava / br_ucesnika
-            fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
-            
-            st.markdown(f"""
-                <div style="background-color: #f3e5f5; padding: 10px; border-radius: 5px; border-left: 5px solid #9c27b0; margin-bottom: 20px;">
-                    <span style="color: #4a148c;">Učešće u dostavi po osobi: <b>{fiksna_dostava_str} RSD</b></span>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            trenutna_suma = 0
-            for o in odabrani:
-                v_dug = st.number_input(
-                    f"Iznos za učesnika {o} (RSD):", 
-                    min_value=0, 
-                    value=0, 
-                    step=1, 
-                    format="%d", 
-                    key=f"rucni_num_{o}_{sufiks}"
-                )
-                finalni_dugovi[o] = v_dug
-                trenutna_suma += v_dug
-            
-            ostatak = suma_ukupno - trenutna_suma
-            if abs(ostatak) < 0.01:
-                validna_podela = True
-            elif ostatak > 0:
-                st.warning(f"Preostalo: **{formatiraj_broj_sa_tackom(ostatak)} RSD**")
-            else:
-                st.error(f"Višak: **{formatiraj_broj_sa_tackom(abs(ostatak))} RSD**")
+        sortirani = sorted(st.session_state.clanovi_univerzalni)
         
-        def obrisi_listu_callback():
-            st.session_state.clanovi_univerzalni = []
-            kljuc_multi = f"ucesnici_{sufiks}"
-            if kljuc_multi in st.session_state:
-                del st.session_state[kljuc_multi]
+        if sortirani:
+            odabrani = st.multiselect("Ko učestvuje:", options=sortirani, key=f"ucesnici_{sufiks}")
+            
+            if odabrani:
+                br_ucesnika = len(odabrani)
+                fiksna_dostava = v_dostava / br_ucesnika
+                fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
+                
+                st.markdown(f"""
+                    <div style="background-color: rgba(156, 39, 176, 0.08); padding: 12px; border-radius: 8px; border-left: 5px solid #9c27b0; margin-bottom: 20px;">
+                        <span style="color: inherit;">Učešće u dostavi po osobi: <b>{fiksna_dostava_str} RSD</b></span>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                trenutna_suma = 0
+                for o in odabrani:
+                    v_dug = st.number_input(
+                        f"Iznos za učesnika {o} (RSD):", 
+                        min_value=0, 
+                        value=0, 
+                        step=1, 
+                        format="%d", 
+                        key=f"rucni_num_{o}_{sufiks}"
+                    )
+                    finalni_dugovi[o] = v_dug
+                    trenutna_suma += v_dug
+                
+                ostatak = suma_ukupno - trenutna_suma
+                if abs(ostatak) < 0.01:
+                    validna_podela = True
+                elif ostatak > 0:
+                    st.warning(f"Preostalo: **{formatiraj_broj_sa_tackom(ostatak)} RSD**")
+                else:
+                    st.error(f"Višak: **{formatiraj_broj_sa_tackom(abs(ostatak))} RSD**")
+            
+            def obrisi_listu_callback():
+                st.session_state.clanovi_univerzalni = []
+                kljuc_multi = f"ucesnici_{sufiks}"
+                if kljuc_multi in st.session_state:
+                    del st.session_state[kljuc_multi]
 
-        st.button("Obriši celu listu", on_click=obrisi_listu_callback)
+            st.button("Obriši celu listu", on_click=obrisi_listu_callback)
 
 # --- QR SEKCIJA ---
 st.divider()
@@ -183,10 +205,11 @@ if validna_podela and suma_ukupno > 0:
                 buf = BytesIO()
                 qr_img.save(buf, format="PNG")
                 
-                _, col_qr, _ = st.columns([1, 2, 1])
-                with col_qr:
-                    zajednicki_iznos_str = formatiraj_broj_sa_tackom(finalni_dugovi['Zajednički'])
-                    st.image(buf.getvalue(), caption=f"Iznos: {zajednicki_iznos_str} RSD", use_container_width=True)
+                with st.container(border=True):
+                    _, col_qr, _ = st.columns([1, 2, 1])
+                    with col_qr:
+                        zajednicki_iznos_str = formatiraj_broj_sa_tackom(finalni_dugovi['Zajednički'])
+                        st.image(buf.getvalue(), caption=f"Iznos: {zajednicki_iznos_str} RSD", use_container_width=True)
             else:
                 for ime, dug in finalni_dugovi.items():
                     if dug > 0:
