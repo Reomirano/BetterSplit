@@ -29,7 +29,7 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA TAMNO ZELENU TEMU I POVEĆANE ELEMENTE ZA 50% ---
+# --- CUSTOM CSS ZA TAMNO ZELENU TEMU I MODERAN DIZAJN ---
 st.markdown("""
     <style>
     .stApp {
@@ -39,7 +39,7 @@ st.markdown("""
     
     h1, h2, h3, h4, h5, h6, p, span, label, div, 
     .stMarkdown, .stText, [data-testid="stMarkdownContainer"] p, 
-    [data-testid="stWidgetLabel"], [data-baseweb="radio"] label {
+    [data-testid="stWidgetLabel"] {
         color: #ffffff !important;
     }
     
@@ -64,6 +64,31 @@ st.markdown("""
     div.stButton > button[kind="primary"] {
         font-size: 1.65rem !important;
         padding: 0.9rem 1.5rem !important;
+    }
+
+    /* Stilizovanje radio dugmića (Metoda podele) u kartice */
+    div[data-baseweb="radio"] {
+        gap: 15px;
+    }
+    div[data-baseweb="radio"] label {
+        background-color: #1b4332 !important;
+        border: 1px solid #2d6a4f !important;
+        border-radius: 10px !important;
+        padding: 12px 20px !important;
+        font-size: 1.25rem !important;
+        font-weight: 600 !important;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        flex: 1;
+        text-align: center;
+    }
+    div[data-baseweb="radio"] label:hover {
+        background-color: #2d6a4f !important;
+        border-color: #52b788 !important;
+    }
+    /* Sakrivanje standardnih radio kružića da izgledaju kao čiste kartice */
+    div[data-baseweb="radio"] input[type="radio"] {
+        display: none;
     }
 
     /* Input polja i tekstualna polja sa tamno zelenom nijansom */
@@ -163,7 +188,6 @@ with st.container(border=True):
     v_racun = c1.number_input("Iznos sa računa (RSD):", min_value=0, value=0, step=1, format="%d", key=f"racun_num_{sufiks}")
     v_dostava = c2.number_input("Dostava (RSD):", min_value=0, value=0, step=1, format="%d", key=f"dostava_num_{sufiks}")
 
-# Dugme Novi iznos premešteno ispod podataka o trošku
 if st.button("🔄 Novi iznos", use_container_width=True):
     st.session_state.reset_kljuc += 1
     st.session_state.clanovi_univerzalni = []
@@ -174,7 +198,9 @@ suma_ukupno = v_racun + v_dostava
 st.metric(label="Ukupno", value=f"{formatiraj_broj_sa_tackom(suma_ukupno)} RSD")
 st.divider()
 
-nacin = st.radio("Metoda podele:", ["Ravnopravno", "Ručni unos"], horizontal=True, key=f"nacin_{sufiks}")
+# Veći font za naslov metoda podele
+st.markdown('<p style="font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; color: #ffffff;">Metoda podele:</p>', unsafe_allow_html=True)
+nacin = st.radio("Metoda podele:", ["Ravnopravno", "Ručni unos"], horizontal=True, label_visibility="collapsed", key=f"nacin_{sufiks}")
 
 finalni_dugovi = {}
 validna_podela = False
