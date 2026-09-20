@@ -57,12 +57,22 @@ st.markdown("""
         opacity: 1 !important;
     }
     
-    /* Multiselect prilagođavanje */
-    .stMultiSelect div[data-baseweb="select"] {
+    /* Multiselect kompletno u tamno zelenom tonu (rešenje bele pozadine) */
+    div.stMultiSelect, div[data-baseweb="select"] {
         background-color: #1b4332 !important;
         border: 1px solid #2d6a4f !important;
         border-radius: 8px !important;
     }
+    
+    .stMultiSelect div[data-baseweb="select"] > div {
+        background-color: #1b4332 !important;
+    }
+    
+    .stMultiSelect input {
+        background-color: transparent !important;
+        color: #ffffff !important;
+    }
+    
     .stMultiSelect span[data-baseweb="tag"] {
         background-color: #2d6a4f !important;
         color: #ffffff !important;
