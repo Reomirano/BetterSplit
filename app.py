@@ -205,7 +205,7 @@ else:
         if aktivni_clanovi:
             br_ucesnika = len(aktivni_clanovi)
             fiksna_dostava = v_dostava / br_ucesnika if br_ucesnika > 0 else 0
-            fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
+            fiksna_dostava_str = formatiraj_broj_sa_tackom(round(fiksna_dostava))
             
             st.markdown(f"""
                 <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
