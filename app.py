@@ -4,8 +4,8 @@ from io import BytesIO
 import re
 
 # --- FUNKCIJE ---
-def ocisti_racun(racun):
-    samo_cifre = re.sub(r'\D', '', racun)
+def ocisti_racun(racun_int):
+    samo_cifre = re.sub(r'\D', '', str(racun_int))
     
     if 5 < len(samo_cifre) < 18:
         kod_banke = samo_cifre[:3]         
@@ -22,16 +22,6 @@ def formatiraj_za_prikaz(racun_18_cifara):
     if len(racun_18_cifara) == 18:
         return f"{racun_18_cifara[:3]}-{racun_18_cifara[3:-2]}-{racun_18_cifara[-2:]}"
     return racun_18_cifara
-
-def parsiraj_broj(tekst):
-    if not tekst:
-        return 0.0
-    # Uklanjamo tačke (separator hiljada) i menjamo zarez u tačku za float konverziju
-    očišćeno = tekst.strip().replace('.', '').replace(',', '.')
-    try:
-        return float(očišćeno)
-    except ValueError:
-        return 0.0
 
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
@@ -58,12 +48,17 @@ st.subheader("⚙️ Podaci o primaocu")
 col_p1, col_p2 = st.columns(2)
 moje_ime = col_p1.text_input("Primalac:", value="", key="user_name", placeholder="Ime i prezime")
 
-# ------ IZMENA ZA BROJ RAČUNA ------
-# Dozvoljavamo samo cifre i znak '-' u polju za unos
-sirovi_racun = col_p2.text_input("Broj računa primaoca:", value="", key="user_bank", placeholder="npr. 160-0000000000000-12")
-moj_racun = re.sub(r'[^0-9-]', '', sirovi_racun)
-# ----------------------------------
+moj_racun_broj = col_p2.number_input(
+    "Broj računa primaoca:", 
+    min_value=0, 
+    value=0, 
+    step=1, 
+    format="%d", 
+    key="user_bank", 
+    placeholder="uneti broj računa bez crtica"
+)
 
+moj_racun = str(moj_racun_broj) if moj_racun_broj > 0 else ""
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "Nije unet"
 
@@ -86,11 +81,9 @@ if st.button("🔄 Novi unos", use_container_width=True, type="primary"):
 
 st.subheader("✍️ Podaci o trošku")
 c1, c2 = st.columns(2)
-s_racun_input = c1.text_input("Iznos sa računa (RSD):", value="", placeholder="npr. 1.500,50", key=f"racun_str_{sufiks}")
-s_dostava_input = c2.text_input("Dostava (RSD):", value="", placeholder="npr. 250,00", key=f"dostava_str_{sufiks}")
+v_racun = c1.number_input("Iznos sa računa (RSD):", min_value=0.0, value=0.0, step=1.0, format="%.2f", key=f"racun_num_{sufiks}")
+v_dostava = c2.number_input("Dostava (RSD):", min_value=0.0, value=0.0, step=1.0, format="%.2f", key=f"dostava_num_{sufiks}")
 
-v_racun = parsiraj_broj(s_racun_input)
-v_dostava = parsiraj_broj(s_dostava_input)
 suma_ukupno = v_racun + v_dostava
 
 st.markdown(f"### Ukupno: {f'{suma_ukupno:.2f}'.replace('.', ',')} RSD")
@@ -142,8 +135,14 @@ else:
             
             trenutna_suma = 0.0
             for o in odabrani:
-                s_dug_input = st.text_input(f"Iznos za učesnika {o} (RSD):", value="", placeholder="npr. 500,00", key=f"rucni_str_{o}_{sufiks}")
-                v_dug = parsiraj_broj(s_dug_input)
+                v_dug = st.number_input(
+                    f"Iznos za učesnika {o} (RSD):", 
+                    min_value=0.0, 
+                    value=0.0, 
+                    step=1.0, 
+                    format="%.2f", 
+                    key=f"rucni_num_{o}_{sufiks}"
+                )
                 finalni_dugovi[o] = v_dug
                 trenutna_suma += v_dug
             
@@ -167,7 +166,7 @@ else:
 st.divider()
 if validna_podela and suma_ukupno > 0:
     if st.button("🔥 GENERIŠI QR KODOVE", use_container_width=True, type="primary"):
-        if not moje_ime or not moj_racun:
+        if not moje_ime or moj_racun_broj == 0:
             st.error("⚠️ Popuni podatke o primaocu na vrhu strane!")
         else:
             if nacin == "Ravnopravno":
@@ -192,7 +191,7 @@ if validna_podela and suma_ukupno > 0:
                         qr_img.save(buf, format="PNG")
                         
                         with st.container(border=True):
-                            dug_str = f"{dug:.2f}".format(dug).replace('.', ',') if 'dug_str' else f"{dug:.2f}".replace('.', ',')
+                            dug_str = f"{dug:.2f}".replace('.', ',')
                             st.markdown(f"#### {ime} - {dug_str} RSD")
                             _, col_qr_inner, _ = st.columns([1, 2, 1])
                             with col_qr_inner:
