@@ -3,7 +3,6 @@ import qrcode
 from io import BytesIO
 import re
 
-# --- FUNKCIJE ---
 def ocisti_racun(racun):
     samo_cifre = re.sub(r'\D', '', racun)
     
@@ -26,12 +25,12 @@ def formatiraj_za_prikaz(racun_18_cifara):
 def parsiraj_broj(tekst):
     if not tekst:
         return 0.0
-    samo_cifre = re.sub(r'\D', '', tekst)
-    if not samo_cifre:
+    ocisceno = re.sub(r'[^0-9,]', '', tekst).strip().replace(',', '.')
+    try:
+        return float(ocisceno)
+    except ValueError:
         return 0.0
-    return float(samo_cifre) / 100.0
 
-# --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
 if "reset_kljuc" not in st.session_state:
@@ -39,7 +38,6 @@ if "reset_kljuc" not in st.session_state:
 if 'clanovi_univerzalni' not in st.session_state:
     st.session_state.clanovi_univerzalni = []
 
-# --- GLAVNI PANEL ---
 st.title("💰 Podela troškova")
 
 with st.expander("📖 Kako ovo radi?"):
@@ -88,18 +86,18 @@ c1, c2 = st.columns(2)
 def sanitize_racun():
     key = f"racun_str_{sufiks}"
     if key in st.session_state:
-        st.session_state[key] = re.sub(r'\D', '', st.session_state[key])
+        st.session_state[key] = re.sub(r'[^0-9,]', '', st.session_state[key])
 
 def sanitize_dostava():
     key = f"dostava_str_{sufiks}"
     if key in st.session_state:
-        st.session_state[key] = re.sub(r'\D', '', st.session_state[key])
+        st.session_state[key] = re.sub(r'[^0-9,]', '', st.session_state[key])
 
-s_racun_input = c1.text_input("Iznos sa računa (RSD):", value="", placeholder="npr. 150050", key=f"racun_str_{sufiks}", on_change=sanitize_racun)
-s_racun_input = re.sub(r'\D', '', s_racun_input)
+s_racun_input = c1.text_input("Iznos sa računa (RSD):", value="", placeholder="npr. 1500,50", key=f"racun_str_{sufiks}", on_change=sanitize_racun)
+s_racun_input = re.sub(r'[^0-9,]', '', s_racun_input)
 
-s_dostava_input = c2.text_input("Dostava (RSD):", value="", placeholder="npr. 25000", key=f"dostava_str_{sufiks}", on_change=sanitize_dostava)
-s_dostava_input = re.sub(r'\D', '', s_dostava_input)
+s_dostava_input = c2.text_input("Dostava (RSD):", value="", placeholder="npr. 250,00", key=f"dostava_str_{sufiks}", on_change=sanitize_dostava)
+s_dostava_input = re.sub(r'[^0-9,]', '', s_dostava_input)
 
 v_racun = parsiraj_broj(s_racun_input)
 v_dostava = parsiraj_broj(s_dostava_input)
@@ -158,11 +156,11 @@ else:
                     def sanitize_fn():
                         key = f"rucni_str_{member}_{sufiks}"
                         if key in st.session_state:
-                            st.session_state[key] = re.sub(r'\D', '', st.session_state[key])
+                            st.session_state[key] = re.sub(r'[^0-9,]', '', st.session_state[key])
                     return sanitize_fn
 
-                s_dug_input = st.text_input(f"Iznos za učesnika {o} (RSD):", value="", placeholder="npr. 50000", key=f"rucni_str_{o}_{sufiks}", on_change=make_sanitize(o))
-                s_dug_input = re.sub(r'\D', '', s_dug_input)
+                s_dug_input = st.text_input(f"Iznos za učesnika {o} (RSD):", value="", placeholder="npr. 500,00", key=f"rucni_str_{o}_{sufiks}", on_change=make_sanitize(o))
+                s_dug_input = re.sub(r'[^0-9,]', '', s_dug_input)
                 v_dug = parsiraj_broj(s_dug_input)
                 finalni_dugovi[o] = v_dug
                 trenutna_suma += v_dug
@@ -183,7 +181,6 @@ else:
 
         st.button("Obriši celu listu", on_click=obrisi_listu_callback)
 
-# --- QR SEKCIJA ---
 st.divider()
 if validna_podela and suma_ukupno > 0:
     if st.button("🔥 GENERIŠI QR KODOVE", use_container_width=True, type="primary"):
