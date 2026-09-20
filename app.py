@@ -30,46 +30,57 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA TAMNU LJUPIČASTU TEMU ---
+# --- CUSTOM CSS ZA TAMNU LJUPIČASTU TEMI (FIX ZA TEKST) ---
 st.markdown("""
     <style>
     /* Glavna pozadina aplikacije */
     .stApp {
         background-color: #0f0b1a;
-        color: #e2d9f3;
+        color: #f3eeff !important;
     }
     
-    /* Stilizovanje tekstova i naslova da budu svetli i čitljivi */
-    h1, h2, h3, h4, h5, h6, p, span, label, div {
-        color: #e2d9f3 !important;
+    /* Primoravamo sve moguće elemente sa tekstom da budu svetli i vidljivi */
+    h1, h2, h3, h4, h5, h6, p, span, label, div, 
+    .stMarkdown, .stText, [data-testid="stMarkdownContainer"] p, 
+    [data-testid="stWidgetLabel"], [data-baseweb="radio"] label, 
+    [data-testid="stExpander"] summary span {
+        color: #f3eeff !important;
     }
     
-    /* Input polja i dropdown meni */
+    /* Input polja, tekstualna polja i selektori */
     input, textarea, select {
         background-color: #1a132c !important;
         color: #ffffff !important;
-        border: 1px solid #3d2c5e !important;
+        border: 1px solid #4a3575 !important;
         border-radius: 8px !important;
+    }
+    
+    /* Multiselect / padajući meni tagovi i tekst u njima */
+    [data-baseweb="tag"] {
+        background-color: #4a3575 !important;
+    }
+    [data-baseweb="tag"] span {
+        color: #ffffff !important;
     }
     
     /* Okviri kontejnera i ekspandera */
     div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #150f24;
-        border: 1px solid #2d1f47;
-        border-radius: 12px;
+        background-color: #150f24 !important;
+        border: 1px solid #2d1f47 !important;
+        border-radius: 12px !important;
     }
     
     /* Glavna dugmad */
     .stButton button {
-        background-color: #7b2cbf;
-        color: white;
+        background-color: #7b2cbf !important;
+        color: white !important;
         border-radius: 8px;
         font-weight: 600;
         border: none;
         transition: all 0.2s ease-in-out;
     }
     .stButton button:hover {
-        background-color: #9d4edd;
+        background-color: #9d4edd !important;
         transform: translateY(-1px);
     }
     
@@ -192,7 +203,7 @@ else:
                 
                 st.markdown(f"""
                     <div style="background-color: #24133b; padding: 12px; border-radius: 8px; border-left: 5px solid #c77dff; margin-bottom: 20px;">
-                        <span style="color: #e2d9f3 !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
+                        <span style="color: #f3eeff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
                     </div>
                 """, unsafe_allow_html=True)
                 
