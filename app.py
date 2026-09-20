@@ -171,7 +171,6 @@ if validna_podela and suma_ukupno > 0:
                 buf = BytesIO()
                 qr_img.save(buf, format="PNG")
                 
-                # Centralizovan prikaz QR koda optimalan za mobilne ekrane
                 _, col_qr, _ = st.columns([1, 2, 1])
                 with col_qr:
                     st.image(buf.getvalue(), caption=f"Iznos: {f'{finalni_dugovi[\"Zajednički\"]:.2f}'.replace('.', ',')} RSD", use_container_width=True)
@@ -184,10 +183,9 @@ if validna_podela and suma_ukupno > 0:
                         buf = BytesIO()
                         qr_img.save(buf, format="PNG")
                         
-                        # Vertikalni redosled kartica sa QR kodovima prilagođen mobilnom prikazu
                         with st.container(border=True):
                             st.markdown(f"#### {ime} - {f'{dug:.2f}'.replace('.', ',')} RSD")
-                            _, col_qr_ inner, _ = st.columns([1, 2, 1])
+                            _, col_qr_inner, _ = st.columns([1, 2, 1])
                             with col_qr_inner:
                                 st.image(buf.getvalue(), use_container_width=True)
 
