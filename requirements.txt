@@ -1,4 +1,2 @@
 streamlit
 qrcode
-pillow
-opencv-python-headless
