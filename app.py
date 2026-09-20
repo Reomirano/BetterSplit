@@ -29,7 +29,7 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA TAMNO ZELENU TEMU ---
+# --- CUSTOM CSS ZA TAMNO ZELENU TEMU I POVEĆANJE FONTOVA ---
 st.markdown("""
     <style>
     .stApp {
@@ -39,11 +39,27 @@ st.markdown("""
     
     h1, h2, h3, h4, h5, h6, p, span, label, div, 
     .stMarkdown, .stText, [data-testid="stMarkdownContainer"] p, 
-    [data-testid="stWidgetLabel"], [data-baseweb="radio"] label, 
-    [data-testid="stExpander"] summary span {
+    [data-testid="stWidgetLabel"], [data-baseweb="radio"] label {
         color: #ffffff !important;
     }
     
+    /* Povećanje fonta i ikonica za ekspander (Kako ovo radi?) */
+    div[data-testid="stExpander"] summary span {
+        font-size: 1.2rem !important;
+        font-weight: 700 !important;
+        color: #b7e4c7 !important;
+    }
+    div[data-testid="stExpander"] summary p::before {
+        content: "📖 ";
+        font-size: 1.3rem;
+    }
+
+    /* Povećanje fonta za dugme Novi unos */
+    div.stButton > button[kind="primary"] {
+        font-size: 1.1rem !important;
+        padding: 0.6rem 1rem !important;
+    }
+
     /* Input polja i tekstualna polja sa tamno zelenom nijansom */
     input, textarea, select {
         background-color: #1b4332 !important;
@@ -57,7 +73,7 @@ st.markdown("""
         opacity: 1 !important;
     }
     
-    /* Dugmad u zelenim tonovima */
+    /* Opšta dugmad u zelenim tonovima */
     .stButton button {
         background-color: #2d6a4f !important;
         color: white !important;
@@ -95,7 +111,7 @@ if 'clanovi_univerzalni' not in st.session_state:
 # --- GLAVNI PANEL ---
 st.title("💰 Podela troškova")
 
-with st.expander("📖 Kako ovo radi?"):
+with st.expander("Kako ovo radi?"):
     st.write("""
     1. **Unesi podatke primaoca:** Upiši svoje ime i broj računa direktno u polja ispod.
     2. **Unesi iznose:** Upiši vrednost sa računa i cenu dostave u celim dinarima.
@@ -178,10 +194,11 @@ else:
     with st.container(border=True):
         st.text_input("Dodaj učesnika na listu (potvrdi na Enter):", key="novo_ime_input", on_change=dodaj_direktno)
         
-        sortirani = sorted(st.session_state.clanovi_univerzalni)
+        # Zadržava redosled unosa (FIFO) umesto sortiranja po abecedi
+        aktivni_clanovi = st.session_state.clanovi_univerzalni
         
-        if sortirani:
-            br_ucesnika = len(sortirani)
+        if aktivni_clanovi:
+            br_ucesnika = len(aktivni_clanovi)
             fiksna_dostava = v_dostava / br_ucesnika if br_ucesnika > 0 else 0
             fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
             
@@ -192,10 +209,10 @@ else:
             """, unsafe_allow_html=True)
             
             trenutna_suma = 0
-            for o in list(sortirani):
+            for o in list(aktivni_clanovi):
                 col_i1, col_i2, col_i3 = st.columns([2, 2, 0.6])
                 with col_i1:
-                    st.markdown(f"<p style='padding-top: 8px; font-weight: 500;'>Iznos za {o} (RSD):</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='padding-top: 8px; font-weight: 600;'>{o}:</p>", unsafe_allow_html=True)
                 with col_i2:
                     v_dug = st.number_input(
                         f"Iznos_{o}", 
@@ -233,7 +250,7 @@ else:
 # --- QR SEKCIJA ---
 st.divider()
 if validna_podela and suma_ukupno > 0:
-    if st.button("🔥 GENERIŠI QR KODOVE", use_container_width=True, type="primary"):
+    if st.button("⚡ GENERIŠI QR KODOVE", use_container_width=True, type="primary"):
         if not moje_ime or not moj_racun:
             st.error("⚠️ Popuni podatke o primaocu na vrhu strane!")
         else:
