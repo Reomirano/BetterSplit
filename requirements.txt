@@ -1,7 +1,4 @@
 streamlit
 opencv-python-headless
-pyzbar
 pillow
 requests
-beautifulsoup4
-pandas
