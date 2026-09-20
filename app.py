@@ -1,19 +1,22 @@
 import streamlit as st
 import cv2
-from pyzxing import BarCodeReader
+from pyzbar.pyzbar import decode
 from PIL import Image
 import requests
+import numpy as np
 
 st.title("Fiskalni QR čitač – Poreska uprava")
 
 uploaded = st.file_uploader("Ubaci sliku fiskalnog QR koda", type=["png", "jpg", "jpeg"])
 
-def extract_qr_data(image_path):
-    reader = BarCodeReader()
-    result = reader.decode(image_path)
-    if not result:
+def extract_qr_data(image):
+    try:
+        decoded = decode(image)
+        if not decoded:
+            return None
+        return decoded[0].data.decode("utf-8")
+    except Exception as e:
         return None
-    return result[0]['parsed']
 
 def fetch_pu_data(url):
     try:
@@ -25,13 +28,13 @@ def fetch_pu_data(url):
 
 if uploaded:
     img = Image.open(uploaded)
-    img.save("temp_qr.png")
     st.image(img, caption="Učitana slika", use_column_width=True)
 
-    qr_text = extract_qr_data("temp_qr.png")
+    img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+    qr_text = extract_qr_data(img_cv)
 
     if not qr_text:
-        st.error("QR kod nije pronađen.")
+        st.error("QR kod nije pronađen ili nije moguće očitati.")
     else:
         st.success("QR kod uspešno očitan.")
         st.write("Sadržaj QR koda:", qr_text)
