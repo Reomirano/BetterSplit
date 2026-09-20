@@ -5,25 +5,20 @@ import re
 
 # --- FUNKCIJE ---
 def ocisti_racun(racun):
-    # Uklanjamo sve što nisu cifre (razmake, crtice, itd.)
     samo_cifre = re.sub(r'\D', '', racun)
     
-    # NBS standard: 3 cifre banka + 13 cifara partija + 2 cifre kontrolni broj = 18 cifara
     if 5 < len(samo_cifre) < 18:
-        kod_banke = samo_cifre[:3]          # Prve 3 cifre
-        kontrolni_broj = samo_cifre[-2:]     # Poslednje 2 cifre
-        partija_racuna = samo_cifre[3:-2]    # Sve između
+        kod_banke = samo_cifre[:3]          
+        kontrolni_broj = samo_cifre[-2:]     
+        partija_racuna = samo_cifre[3:-2]    
         
-        # Dopunjavamo srednji deo (partiju) vodećim nulama do 13 cifara
         partija_sa_nulama = partija_racuna.zfill(13)
         
         return f"{kod_banke}{partija_sa_nulama}{kontrolni_broj}"
     
-    # Ako već ima 18 cifara ili je prekratak unos, samo ga vraćamo formatiranog
     return samo_cifre.zfill(18)
 
 def formatiraj_za_prikaz(racun_18_cifara):
-    # Ako račun ima tačno 18 cifara, delimo ga crticama radi lakšeg čitanja (xxx-xxxxxxxxxxxxx-xx)
     if len(racun_18_cifara) == 18:
         return f"{racun_18_cifara[:3]}-{racun_18_cifara[3:-2]}-{racun_18_cifara[-2:]}"
     return racun_18_cifara
@@ -55,11 +50,9 @@ with st.expander("📖 Kako ovo radi?"):
     4. **Skeniranje:** Svako otvori mBanking, odabere 'IPS' i očita kod sa ekrana (univerzalni ili lični).
     """)
 
-# Priprema računa za pozadinu (18 cifara) i za ekran (sa crticama)
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "Nije unet"
 
-# Pregledan prikaz sa crticama
 st.markdown(f"""
     <p style="font-size: 1.2rem; font-weight: 500; margin-top: 10px; margin-bottom: 0;">
         🏦 Primaoc: <b>{moje_ime if moje_ime else '...'}</b><br>
@@ -165,7 +158,7 @@ if validna_podela and suma_ukupno > 0:
             st.error("⚠️ Popuni podatke u sidebar-u!")
         else:
             if nacin == "Ravnopravno":
-                iz_fmt = "{:.2f}".format(finalni_dugovi["Zajednički"]).replace('.', ',')
+                iz_fmt = "{:.2f}".format(finalni_dugovi['Zajednički']).replace('.', ',')
                 ips_data = f"K:PR|V:01|C:1|R:{c_racun}|N:{moje_ime}|I:RSD{iz_fmt}|SF:289|S:Podela racuna"
                 qr_img = qrcode.make(ips_data)
                 buf = BytesIO()
@@ -173,7 +166,8 @@ if validna_podela and suma_ukupno > 0:
                 
                 _, col_qr, _ = st.columns([1, 2, 1])
                 with col_qr:
-                    st.image(buf.getvalue(), caption=f"Iznos: {f'{finalni_dugovi[\"Zajednički\"]:.2f}'.replace('.', ',')} RSD", use_container_width=True)
+                    zajednicki_iznos_str = f"{finalni_dugovi['Zajednički']:.2f}".replace('.', ',')
+                    st.image(buf.getvalue(), caption=f"Iznos: {zajednicki_iznos_str} RSD", use_container_width=True)
             else:
                 for ime, dug in finalni_dugovi.items():
                     if dug > 0:
@@ -185,7 +179,8 @@ if validna_podela and suma_ukupno > 0:
                         qr_img.save(buf, format="PNG")
                         
                         with st.container(border=True):
-                            st.markdown(f"#### {ime} - {f'{dug:.2f}'.replace('.', ',')} RSD")
+                            dug_str = f"{dug:.2f}".replace('.', ',')
+                            st.markdown(f"#### {ime} - {dug_str} RSD")
                             _, col_qr_inner, _ = st.columns([1, 2, 1])
                             with col_qr_inner:
                                 st.image(buf.getvalue(), use_container_width=True)
