@@ -5,7 +5,6 @@ import re
 
 # --- FUNKCIJE ---
 def ocisti_racun(racun_str):
-    # Izbacuje sve što nisu cifre iz unetog stringa računa
     samo_cifre = re.sub(r'\D', '', str(racun_str))
     
     if 5 < len(samo_cifre) < 18:
@@ -30,47 +29,35 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA TAMNU LJUPIČASTU TEMI (FIX ZA TEKST) ---
+# --- CUSTOM CSS ZA KONAČNO VIDLJIVE TEKSTOVE I PLACEHOLDERE ---
 st.markdown("""
     <style>
-    /* Glavna pozadina aplikacije */
     .stApp {
         background-color: #0f0b1a;
-        color: #f3eeff !important;
+        color: #ffffff !important;
     }
     
-    /* Primoravamo sve moguće elemente sa tekstom da budu svetli i vidljivi */
     h1, h2, h3, h4, h5, h6, p, span, label, div, 
     .stMarkdown, .stText, [data-testid="stMarkdownContainer"] p, 
     [data-testid="stWidgetLabel"], [data-baseweb="radio"] label, 
     [data-testid="stExpander"] summary span {
-        color: #f3eeff !important;
+        color: #ffffff !important;
     }
     
-    /* Input polja, tekstualna polja i selektori */
+    /* Eksplicitno bela boja za tekst unutar input polja i placeholder */
     input, textarea, select {
         background-color: #1a132c !important;
         color: #ffffff !important;
-        border: 1px solid #4a3575 !important;
+        border: 1px solid #5a3e8f !important;
         border-radius: 8px !important;
     }
     
-    /* Multiselect / padajući meni tagovi i tekst u njima */
-    [data-baseweb="tag"] {
-        background-color: #4a3575 !important;
-    }
-    [data-baseweb="tag"] span {
-        color: #ffffff !important;
+    input::placeholder, textarea::placeholder {
+        color: #bfa1ff !important;
+        opacity: 1 !important;
     }
     
-    /* Okviri kontejnera i ekspandera */
-    div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #150f24 !important;
-        border: 1px solid #2d1f47 !important;
-        border-radius: 12px !important;
-    }
-    
-    /* Glavna dugmad */
+    /* Popravka boja za ikone i dugmad unutar Streamlita */
     .stButton button {
         background-color: #7b2cbf !important;
         color: white !important;
@@ -79,14 +66,22 @@ st.markdown("""
         border: none;
         transition: all 0.2s ease-in-out;
     }
+    .stButton button * {
+        color: white !important;
+    }
     .stButton button:hover {
         background-color: #9d4edd !important;
         transform: translateY(-1px);
     }
     
-    /* Metrika / Ukupni iznos */
+    div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #150f24 !important;
+        border: 1px solid #3d2566 !important;
+        border-radius: 12px !important;
+    }
+    
     div[data-testid="stMetricValue"] {
-        color: #c77dff !important;
+        color: #d8b4fe !important;
         font-size: 1.8rem;
     }
     </style>
@@ -130,7 +125,7 @@ prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "unesite račun"
 
 st.markdown(f"""
     <div style="padding: 8px 12px; background-color: #1a132c; border-radius: 6px; border-left: 4px solid #9d4edd; margin-top: 5px; margin-bottom: 5px;">
-        <span style="font-size: 1rem; font-weight: 500; color: #b79ced !important;">
+        <span style="font-size: 1rem; font-weight: 500; color: #d8b4fe !important;">
             Validan račun: <b style="color: #ffffff !important;">{prikaz_racuna}</b>
         </span>
     </div>
@@ -203,7 +198,7 @@ else:
                 
                 st.markdown(f"""
                     <div style="background-color: #24133b; padding: 12px; border-radius: 8px; border-left: 5px solid #c77dff; margin-bottom: 20px;">
-                        <span style="color: #f3eeff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
+                        <span style="color: #ffffff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
                     </div>
                 """, unsafe_allow_html=True)
                 
