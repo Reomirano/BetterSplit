@@ -30,18 +30,52 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA ATRAKTIVNIJI IZGLED ---
+# --- CUSTOM CSS ZA TAMNU LJUPIČASTU TEMU ---
 st.markdown("""
     <style>
+    /* Glavna pozadina aplikacije */
+    .stApp {
+        background-color: #0f0b1a;
+        color: #e2d9f3;
+    }
+    
+    /* Stilizovanje tekstova i naslova da budu svetli i čitljivi */
+    h1, h2, h3, h4, h5, h6, p, span, label, div {
+        color: #e2d9f3 !important;
+    }
+    
+    /* Input polja i dropdown meni */
+    input, textarea, select {
+        background-color: #1a132c !important;
+        color: #ffffff !important;
+        border: 1px solid #3d2c5e !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Okviri kontejnera i ekspandera */
+    div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #150f24;
+        border: 1px solid #2d1f47;
+        border-radius: 12px;
+    }
+    
+    /* Glavna dugmad */
     .stButton button {
+        background-color: #7b2cbf;
+        color: white;
         border-radius: 8px;
         font-weight: 600;
+        border: none;
         transition: all 0.2s ease-in-out;
     }
     .stButton button:hover {
+        background-color: #9d4edd;
         transform: translateY(-1px);
     }
+    
+    /* Metrika / Ukupni iznos */
     div[data-testid="stMetricValue"] {
+        color: #c77dff !important;
         font-size: 1.8rem;
     }
     </style>
@@ -84,9 +118,9 @@ c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "unesite račun"
 
 st.markdown(f"""
-    <div style="padding: 8px 12px; background-color: rgba(128, 128, 128, 0.08); border-radius: 6px; border-left: 4px solid #808080; margin-top: 5px; margin-bottom: 5px;">
-        <span style="font-size: 1rem; font-weight: 500; color: gray;">
-            Validan račun: <b style="color: inherit;">{prikaz_racuna}</b>
+    <div style="padding: 8px 12px; background-color: #1a132c; border-radius: 6px; border-left: 4px solid #9d4edd; margin-top: 5px; margin-bottom: 5px;">
+        <span style="font-size: 1rem; font-weight: 500; color: #b79ced !important;">
+            Validan račun: <b style="color: #ffffff !important;">{prikaz_racuna}</b>
         </span>
     </div>
 """, unsafe_allow_html=True)
@@ -157,8 +191,8 @@ else:
                 fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
                 
                 st.markdown(f"""
-                    <div style="background-color: rgba(156, 39, 176, 0.08); padding: 12px; border-radius: 8px; border-left: 5px solid #9c27b0; margin-bottom: 20px;">
-                        <span style="color: inherit;">Učešće u dostavi po osobi: <b>{fiksna_dostava_str} RSD</b></span>
+                    <div style="background-color: #24133b; padding: 12px; border-radius: 8px; border-left: 5px solid #c77dff; margin-bottom: 20px;">
+                        <span style="color: #e2d9f3 !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
                     </div>
                 """, unsafe_allow_html=True)
                 
