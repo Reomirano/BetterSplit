@@ -1,8 +1,7 @@
 import streamlit as st
+import cv2
 from PIL import Image
 import numpy as np
-import cv2
-from pyzbar.pyzbar import decode
 import requests
 
 st.title("Fiskalni QR čitač – Poreska uprava")
@@ -10,13 +9,9 @@ st.title("Fiskalni QR čitač – Poreska uprava")
 uploaded = st.file_uploader("Ubaci sliku fiskalnog QR koda", type=["png", "jpg", "jpeg"])
 
 def read_qr(image):
-    try:
-        decoded = decode(image)
-        if not decoded:
-            return None
-        return decoded[0].data.decode("utf-8")
-    except:
-        return None
+    detector = cv2.QRCodeDetector()
+    data, _, _ = detector.detectAndDecode(image)
+    return data if data else None
 
 def fetch_pu(url):
     try:
@@ -32,7 +27,6 @@ if uploaded:
     st.image(img, caption="Učitana slika", use_column_width=True)
 
     img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-
     qr_text = read_qr(img_cv)
 
     if not qr_text:
@@ -56,11 +50,7 @@ if uploaded:
                 else:
                     st.success("Artikli učitani.")
                     table = [
-                        {
-                            "Naziv": item.get("name", ""),
-                            "Količina": item.get("quantity", ""),
-                            "Cena": item.get("price", "")
-                        }
-                        for item in items
+                        {"Naziv": i.get("name", ""), "Količina": i.get("quantity", ""), "Cena": i.get("price", "")}
+                        for i in items
                     ]
                     st.table(table)
