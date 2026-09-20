@@ -183,8 +183,8 @@ if nacin == "Ravnopravno":
         broj_ljudi = st.number_input("Ukupan broj osoba:", min_value=1, value=2, step=1, key=f"br_ljudi_{sufiks}")
         if broj_ljudi > 1:
             po_osobi = suma_ukupno / broj_ljudi
-            po_osobi_zaokruzeno = round(po_osobi, 2)
-            po_osobi_str = "{:.2f}".format(po_osobi_zaokruzeno).replace('.', ',')
+            po_osobi_zaokruzeno = round(po_osobi)
+            po_osobi_str = formatiraj_broj_sa_tackom(po_osobi_zaokruzeno)
             st.info(f"Po osobi: **{po_osobi_str} RSD**")
             finalni_dugovi["Zajednički"] = po_osobi_zaokruzeno
             validna_podela = True
