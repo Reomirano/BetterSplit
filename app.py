@@ -29,7 +29,7 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA TAMNO ZELENU TEMU I POVEĆANJE FONTOVA ---
+# --- CUSTOM CSS ZA TAMNO ZELENU TEMU I POVEĆANE ELEMENTE ZA 50% ---
 st.markdown("""
     <style>
     .stApp {
@@ -43,21 +43,27 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* Povećanje fonta i ikonica za ekspander (Kako ovo radi?) */
+    /* 1. Povećanje fonta i ikonica za ekspander (Kako ovo radi?) za 50% (sa 1.2rem -> 1.8rem) */
     div[data-testid="stExpander"] summary span {
-        font-size: 1.2rem !important;
+        font-size: 1.8rem !important;
         font-weight: 700 !important;
         color: #b7e4c7 !important;
     }
     div[data-testid="stExpander"] summary p::before {
         content: "📖 ";
-        font-size: 1.3rem;
+        font-size: 1.95rem;
     }
 
-    /* Povećanje fonta za dugme Novi unos */
+    /* 2. Povećanje fonta i paddinga za dugme Novi unos za 50% */
+    div.stButton > button[kind="secondary"] {
+        font-size: 1.65rem !important;
+        padding: 0.9rem 1.5rem !important;
+    }
+
+    /* 5. Povećanje fonta i paddinga za dugme GENERIŠI QR KODOVE za 50% */
     div.stButton > button[kind="primary"] {
-        font-size: 1.1rem !important;
-        padding: 0.6rem 1rem !important;
+        font-size: 1.65rem !important;
+        padding: 0.9rem 1.5rem !important;
     }
 
     /* Input polja i tekstualna polja sa tamno zelenom nijansom */
@@ -151,7 +157,7 @@ st.divider()
 
 sufiks = st.session_state.reset_kljuc
 
-if st.button("🔄 Novi unos", use_container_width=True, type="primary"):
+if st.button("🔄 Novi unos", use_container_width=True):
     st.session_state.reset_kljuc += 1
     st.session_state.clanovi_univerzalni = []
     st.rerun()
@@ -194,7 +200,6 @@ else:
     with st.container(border=True):
         st.text_input("Dodaj učesnika na listu (potvrdi na Enter):", key="novo_ime_input", on_change=dodaj_direktno)
         
-        # Zadržava redosled unosa (FIFO) umesto sortiranja po abecedi
         aktivni_clanovi = st.session_state.clanovi_univerzalni
         
         if aktivni_clanovi:
