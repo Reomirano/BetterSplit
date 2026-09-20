@@ -143,7 +143,7 @@ with st.container(border=True):
 moj_racun = re.sub(r'\D', '', moj_racun_unos)
 
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
-prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "unesite račun"
+prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else ""
 
 st.markdown(f"""
     <div style="padding: 8px 12px; background-color: #1b4332; border-radius: 6px; border-left: 4px solid #52b788; margin-top: 5px; margin-bottom: 5px;">
