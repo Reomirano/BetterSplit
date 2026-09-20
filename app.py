@@ -180,6 +180,7 @@ if validna_podela and suma_ukupno > 0:
                         iz_fmt = "{:.2f}".format(dug).replace('.', ',')
                         ips_data = f"K:PR|V:01|C:1|R:{c_racun}|N:{moje_ime}|I:RSD{iz_fmt}|SF:289|S:Rucak-{ime}"
                         qr_img = qrcode.make(ips_data)
+                    
                         buf = BytesIO()
                         qr_img.save(buf, format="PNG")
                         
