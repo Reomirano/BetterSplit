@@ -57,14 +57,14 @@ moj_racun_unos = col_p2.text_input(
     "Broj računa primaoca:", 
     value="", 
     key="user_bank", 
-    placeholder="npr. 160-0000000000000-12 ili spojeno"
+    placeholder="npr. 160-12345678999-12"
 )
 
 # Automatsko čišćenje unosa da ostanu samo cifre
 moj_racun = re.sub(r'\D', '', moj_racun_unos)
 
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
-prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "Nije unet"
+prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "unesite račun"
 
 st.markdown(f"""
     <p style="font-size: 1.1rem; font-weight: 500; margin-top: 5px; margin-bottom: 0; color: gray;">
