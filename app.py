@@ -8,7 +8,7 @@ def ocisti_racun(racun):
     samo_cifre = re.sub(r'\D', '', racun)
     
     if 5 < len(samo_cifre) < 18:
-        kod_banke = samo_cifre[:3]          
+        kod_banke = samo_cifre[:3]         
         kontrolni_broj = samo_cifre[-2:]     
         partija_racuna = samo_cifre[3:-2]    
         
@@ -57,7 +57,12 @@ with st.expander("📖 Kako ovo radi?"):
 st.subheader("⚙️ Podaci o primaocu")
 col_p1, col_p2 = st.columns(2)
 moje_ime = col_p1.text_input("Primalac:", value="", key="user_name", placeholder="Ime i prezime")
-moj_racun = col_p2.text_input("Broj računa primaoca:", value="", key="user_bank", placeholder="Broj tekućeg računa")
+
+# ------ IZMENA ZA BROJ RAČUNA ------
+# Dozvoljavamo samo cifre i znak '-' u polju za unos
+sirovi_racun = col_p2.text_input("Broj računa primaoca:", value="", key="user_bank", placeholder="npr. 160-0000000000000-12")
+moj_racun = re.sub(r'[^0-9-]', '', sirovi_racun)
+# ----------------------------------
 
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "Nije unet"
@@ -187,7 +192,7 @@ if validna_podela and suma_ukupno > 0:
                         qr_img.save(buf, format="PNG")
                         
                         with st.container(border=True):
-                            dug_str = f"{dug:.2f}".replace('.', ',')
+                            dug_str = f"{dug:.2f}".format(dug).replace('.', ',') if 'dug_str' else f"{dug:.2f}".replace('.', ',')
                             st.markdown(f"#### {ime} - {dug_str} RSD")
                             _, col_qr_inner, _ = st.columns([1, 2, 1])
                             with col_qr_inner:
