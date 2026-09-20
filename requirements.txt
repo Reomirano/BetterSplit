@@ -1,4 +1,5 @@
 streamlit
-pyzbar
+opencv-python
+pyzxing
 Pillow
 requests
