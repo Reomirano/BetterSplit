@@ -138,8 +138,6 @@ sufiks = st.session_state.reset_kljuc
 if st.button("🔄 Novi unos", use_container_width=True, type="primary"):
     st.session_state.reset_kljuc += 1
     st.session_state.clanovi_univerzalni = []
-    if f"ucesnici_{sufiks}" in st.session_state:
-        del st.session_state[f"ucesnici_{sufiks}"]
     st.rerun()
 
 st.subheader("✍️ Podaci o trošku")
@@ -175,12 +173,6 @@ else:
         if ime:
             if ime not in st.session_state.clanovi_univerzalni:
                 st.session_state.clanovi_univerzalni.append(ime)
-            
-            kljuc_multi = f"ucesnici_{sufiks}"
-            trenutno_selektovani = list(st.session_state.get(kljuc_multi, []))
-            if ime not in trenutno_selektovani:
-                trenutno_selektovani.append(ime)
-                st.session_state[kljuc_multi] = trenutno_selektovani
         st.session_state.novo_ime_input = ""
 
     with st.container(border=True):
@@ -189,46 +181,53 @@ else:
         sortirani = sorted(st.session_state.clanovi_univerzalni)
         
         if sortirani:
-            odabrani = st.multiselect("Ko učestvuje:", options=sortirani, key=f"ucesnici_{sufiks}")
+            br_ucesnika = len(sortirani)
+            fiksna_dostava = v_dostava / br_ucesnika if br_ucesnika > 0 else 0
+            fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
             
-            if odabrani:
-                br_ucesnika = len(odabrani)
-                fiksna_dostava = v_dostava / br_ucesnika
-                fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
-                
-                st.markdown(f"""
-                    <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
-                        <span style="color: #ffffff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                trenutna_suma = 0
-                for o in odabrani:
+            st.markdown(f"""
+                <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
+                    <span style="color: #ffffff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            trenutna_suma = 0
+            for o in list(sortirani):
+                col_i1, col_i2, col_i3 = st.columns([2, 2, 0.6])
+                with col_i1:
+                    st.markdown(f"<p style='padding-top: 8px; font-weight: 500;'>Iznos za {o} (RSD):</p>", unsafe_allow_html=True)
+                with col_i2:
                     v_dug = st.number_input(
-                        f"Iznos za učesnika {o} (RSD):", 
+                        f"Iznos_{o}", 
                         min_value=0, 
                         value=0, 
                         step=1, 
                         format="%d", 
+                        label_visibility="collapsed",
                         key=f"rucni_num_{o}_{sufiks}"
                     )
-                    finalni_dugovi[o] = v_dug
-                    trenutna_suma += v_dug
+                with col_i3:
+                    if st.button("❌", key=f"obrisi_{o}_{sufiks}", help=f"Ukloni {o}"):
+                        st.session_state.clanovi_univerzalni.remove(o)
+                        if f"rucni_num_{o}_{sufiks}" in st.session_state:
+                            del st.session_state[f"rucni_num_{o}_{sufiks}"]
+                        st.rerun()
                 
-                ostatak = suma_ukupno - trenutna_suma
-                if abs(ostatak) < 0.01:
-                    validna_podela = True
-                elif ostatak > 0:
-                    st.warning(f"Preostalo: **{formatiraj_broj_sa_tackom(ostatak)} RSD**")
-                else:
-                    st.error(f"Višak: **{formatiraj_broj_sa_tackom(abs(ostatak))} RSD**")
+                finalni_dugovi[o] = v_dug
+                trenutna_suma += v_dug
+            
+            ostatak = suma_ukupno - trenutna_suma
+            if abs(ostatak) < 0.01:
+                validna_podela = True
+            elif ostatak > 0:
+                st.warning(f"Preostalo: **{formatiraj_broj_sa_tackom(ostatak)} RSD**")
+            else:
+                st.error(f"Višak: **{formatiraj_broj_sa_tackom(abs(ostatak))} RSD**")
             
             def obrisi_listu_callback():
                 st.session_state.clanovi_univerzalni = []
-                kljuc_multi = f"ucesnici_{sufiks}"
-                if kljuc_multi in st.session_state:
-                    del st.session_state[kljuc_multi]
 
+            st.write("")
             st.button("Obriši celu listu", on_click=obrisi_listu_callback)
 
 # --- QR SEKCIJA ---
