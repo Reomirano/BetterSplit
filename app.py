@@ -37,7 +37,7 @@ st.title("💰 Podela troškova")
 with st.expander("📖 Kako ovo radi?"):
     st.write("""
     1. **Unesi podatke primaoca:** Upiši svoje ime i broj računa direktno u polja ispod.
-    2. **Unesi iznose:** Upiši vrednost sa računa i cenu dostave.
+    2. **Unesi iznose:** Upiši vrednost sa računa i cenu dostave u celim dinarima.
     3. **Odaberi metodu:**
         * **Ravnopravno:** Unesi broj ljudi i dobijaš univerzalni QR kod.
         * **Ručni unos:** Dodaš imena učesnika i uneseš pojedinačnu vrednost.
@@ -81,12 +81,12 @@ if st.button("🔄 Novi unos", use_container_width=True, type="primary"):
 
 st.subheader("✍️ Podaci o trošku")
 c1, c2 = st.columns(2)
-v_racun = c1.number_input("Iznos sa računa (RSD):", min_value=0.0, value=0.0, step=1.0, format="%.2f", key=f"racun_num_{sufiks}")
-v_dostava = c2.number_input("Dostava (RSD):", min_value=0.0, value=0.0, step=1.0, format="%.2f", key=f"dostava_num_{sufiks}")
+v_racun = c1.number_input("Iznos sa računa (RSD):", min_value=0, value=0, step=1, format="%d", key=f"racun_num_{sufiks}")
+v_dostava = c2.number_input("Dostava (RSD):", min_value=0, value=0, step=1, format="%d", key=f"dostava_num_{sufiks}")
 
 suma_ukupno = v_racun + v_dostava
 
-st.markdown(f"### Ukupno: {f'{suma_ukupno:.2f}'.replace('.', ',')} RSD")
+st.markdown(f"### Ukupno: {suma_ukupno} RSD")
 st.divider()
 
 nacin = st.radio("Metoda podele:", ["Ravnopravno", "Ručni unos"], horizontal=True, key=f"nacin_{sufiks}")
@@ -133,14 +133,14 @@ else:
                 </div>
             """, unsafe_allow_html=True)
             
-            trenutna_suma = 0.0
+            trenutna_suma = 0
             for o in odabrani:
                 v_dug = st.number_input(
                     f"Iznos za učesnika {o} (RSD):", 
-                    min_value=0.0, 
-                    value=0.0, 
-                    step=1.0, 
-                    format="%.2f", 
+                    min_value=0, 
+                    value=0, 
+                    step=1, 
+                    format="%d", 
                     key=f"rucni_num_{o}_{sufiks}"
                 )
                 finalni_dugovi[o] = v_dug
@@ -150,9 +150,9 @@ else:
             if abs(ostatak) < 0.01:
                 validna_podela = True
             elif ostatak > 0:
-                st.warning(f"Preostalo: **{f'{ostatak:.2f}'.replace('.', ',')} RSD**")
+                st.warning(f"Preostalo: **{ostatak} RSD**")
             else:
-                st.error(f"Višak: **{f'{abs(ostatak):.2f}'.replace('.', ',')} RSD**")
+                st.error(f"Višak: **{abs(ostatak)} RSD**")
         
         def obrisi_listu_callback():
             st.session_state.clanovi_univerzalni = []
@@ -183,7 +183,7 @@ if validna_podela and suma_ukupno > 0:
             else:
                 for ime, dug in finalni_dugovi.items():
                     if dug > 0:
-                        iz_fmt = "{:.2f}".format(dug).replace('.', ',')
+                        iz_fmt = "{:.2f}".format(float(dug)).replace('.', ',')
                         ips_data = f"K:PR|V:01|C:1|R:{c_racun}|N:{moje_ime}|I:RSD{iz_fmt}|SF:289|S:Rucak-{ime}"
                         qr_img = qrcode.make(ips_data)
                     
@@ -191,8 +191,7 @@ if validna_podela and suma_ukupno > 0:
                         qr_img.save(buf, format="PNG")
                         
                         with st.container(border=True):
-                            dug_str = f"{dug:.2f}".replace('.', ',')
-                            st.markdown(f"#### {ime} - {dug_str} RSD")
+                            st.markdown(f"#### {ime} - {dug} RSD")
                             _, col_qr_inner, _ = st.columns([1, 2, 1])
                             with col_qr_inner:
                                 st.image(buf.getvalue(), use_container_width=True)
