@@ -43,7 +43,7 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* 1. Povećanje fonta i ikonica za ekspander (Kako ovo radi?) za 50% (sa 1.2rem -> 1.8rem) */
+    /* 1. Povećanje fonta i ikonica za ekspander (Kako ovo radi?) za 50% */
     div[data-testid="stExpander"] summary span {
         font-size: 1.8rem !important;
         font-weight: 700 !important;
@@ -54,7 +54,7 @@ st.markdown("""
         font-size: 1.95rem;
     }
 
-    /* 2. Povećanje fonta i paddinga za dugme Novi unos za 50% */
+    /* 2. Povećanje fonta i paddinga za dugme Novi iznos za 50% */
     div.stButton > button[kind="secondary"] {
         font-size: 1.65rem !important;
         padding: 0.9rem 1.5rem !important;
@@ -143,7 +143,7 @@ with st.container(border=True):
 moj_racun = re.sub(r'\D', '', moj_racun_unos)
 
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
-prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else ""
+prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "unesite račun"
 
 st.markdown(f"""
     <div style="padding: 8px 12px; background-color: #1b4332; border-radius: 6px; border-left: 4px solid #52b788; margin-top: 5px; margin-bottom: 5px;">
@@ -157,16 +157,17 @@ st.divider()
 
 sufiks = st.session_state.reset_kljuc
 
-if st.button("🔄 Novi unos", use_container_width=True):
-    st.session_state.reset_kljuc += 1
-    st.session_state.clanovi_univerzalni = []
-    st.rerun()
-
 st.subheader("✍️ Podaci o trošku")
 with st.container(border=True):
     c1, c2 = st.columns(2)
     v_racun = c1.number_input("Iznos sa računa (RSD):", min_value=0, value=0, step=1, format="%d", key=f"racun_num_{sufiks}")
     v_dostava = c2.number_input("Dostava (RSD):", min_value=0, value=0, step=1, format="%d", key=f"dostava_num_{sufiks}")
+
+# Dugme Novi iznos premešteno ispod podataka o trošku
+if st.button("🔄 Novi iznos", use_container_width=True):
+    st.session_state.reset_kljuc += 1
+    st.session_state.clanovi_univerzalni = []
+    st.rerun()
 
 suma_ukupno = v_racun + v_dostava
 
@@ -260,7 +261,7 @@ if validna_podela and suma_ukupno > 0:
             st.error("⚠️ Popuni podatke o primaocu na vrhu strane!")
         else:
             if nacin == "Ravnopravno":
-                iz_fmt = "{:.2f}".format(finalni_dugovi['Zajednički']).replace('.', ',')
+                iz_fmt = "{:.2f}".format(float(finalni_dugovi['Zajednički'])).replace('.', ',')
                 ips_data = f"K:PR|V:01|C:1|R:{c_racun}|N:{moje_ime}|I:RSD{iz_fmt}|SF:289|S:Podela racuna"
                 qr_img = qrcode.make(ips_data)
                 buf = BytesIO()
