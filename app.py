@@ -29,11 +29,11 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA KONAČNO VIDLJIVE TEKSTOVE I PLACEHOLDERE ---
+# --- CUSTOM CSS ZA TAMNO ZELENU TEMU ---
 st.markdown("""
     <style>
     .stApp {
-        background-color: #0f0b1a;
+        background-color: #081c15;
         color: #ffffff !important;
     }
     
@@ -44,22 +44,22 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* Eksplicitno bela boja za tekst unutar input polja i placeholder */
+    /* Input polja i tekstualna polja sa tamno zelenom nijansom */
     input, textarea, select {
-        background-color: #1a132c !important;
+        background-color: #1b4332 !important;
         color: #ffffff !important;
-        border: 1px solid #5a3e8f !important;
+        border: 1px solid #2d6a4f !important;
         border-radius: 8px !important;
     }
     
     input::placeholder, textarea::placeholder {
-        color: #bfa1ff !important;
+        color: #95d5b2 !important;
         opacity: 1 !important;
     }
     
-    /* Popravka boja za ikone i dugmad unutar Streamlita */
+    /* Dugmad u zelenim tonovima */
     .stButton button {
-        background-color: #7b2cbf !important;
+        background-color: #2d6a4f !important;
         color: white !important;
         border-radius: 8px;
         font-weight: 600;
@@ -70,18 +70,18 @@ st.markdown("""
         color: white !important;
     }
     .stButton button:hover {
-        background-color: #9d4edd !important;
+        background-color: #40916c !important;
         transform: translateY(-1px);
     }
     
     div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #150f24 !important;
-        border: 1px solid #3d2566 !important;
+        background-color: #1b4332 !important;
+        border: 1px solid #2d6a4f !important;
         border-radius: 12px !important;
     }
     
     div[data-testid="stMetricValue"] {
-        color: #d8b4fe !important;
+        color: #52b788 !important;
         font-size: 1.8rem;
     }
     </style>
@@ -124,8 +124,8 @@ c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "unesite račun"
 
 st.markdown(f"""
-    <div style="padding: 8px 12px; background-color: #1a132c; border-radius: 6px; border-left: 4px solid #9d4edd; margin-top: 5px; margin-bottom: 5px;">
-        <span style="font-size: 1rem; font-weight: 500; color: #d8b4fe !important;">
+    <div style="padding: 8px 12px; background-color: #1b4332; border-radius: 6px; border-left: 4px solid #52b788; margin-top: 5px; margin-bottom: 5px;">
+        <span style="font-size: 1rem; font-weight: 500; color: #b7e4c7 !important;">
             Validan račun: <b style="color: #ffffff !important;">{prikaz_racuna}</b>
         </span>
     </div>
@@ -197,7 +197,7 @@ else:
                 fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
                 
                 st.markdown(f"""
-                    <div style="background-color: #24133b; padding: 12px; border-radius: 8px; border-left: 5px solid #c77dff; margin-bottom: 20px;">
+                    <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
                         <span style="color: #ffffff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
                     </div>
                 """, unsafe_allow_html=True)
