@@ -23,6 +23,10 @@ def formatiraj_za_prikaz(racun_18_cifara):
         return f"{racun_18_cifara[:3]}-{racun_18_cifara[3:-2]}-{racun_18_cifara[-2:]}"
     return racun_18_cifara
 
+def formatiraj_broj_sa_tackom(broj):
+    # Pretvara broj u string sa tačkom kao separatorom hiljada (npr. 1500 -> 1.500)
+    return f"{int(broj):,}".replace(",", ".")
+
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
@@ -86,7 +90,7 @@ v_dostava = c2.number_input("Dostava (RSD):", min_value=0, value=0, step=1, form
 
 suma_ukupno = v_racun + v_dostava
 
-st.markdown(f"### Ukupno: {suma_ukupno} RSD")
+st.markdown(f"### Ukupno: {formatiraj_broj_sa_tackom(suma_ukupno)} RSD")
 st.divider()
 
 nacin = st.radio("Metoda podele:", ["Ravnopravno", "Ručni unos"], horizontal=True, key=f"nacin_{sufiks}")
@@ -98,8 +102,10 @@ if nacin == "Ravnopravno":
     broj_ljudi = st.number_input("Ukupan broj osoba:", min_value=1, value=2, step=1, key=f"br_ljudi_{sufiks}")
     if broj_ljudi > 1:
         po_osobi = suma_ukupno / broj_ljudi
-        st.info(f"Po osobi: **{f'{po_osobi:.2f}'.replace('.', ',')} RSD**")
-        finalni_dugovi["Zajednički"] = po_osobi
+        po_osobi_zaokruzeno = round(po_osobi, 2)
+        po_osobi_str = "{:.2f}".format(po_osobi_zaokruzeno).replace('.', ',')
+        st.info(f"Po osobi: **{po_osobi_str} RSD**")
+        finalni_dugovi["Zajednički"] = po_osobi_zaokruzeno
         validna_podela = True
 
 else:
@@ -126,10 +132,11 @@ else:
         if odabrani:
             br_ucesnika = len(odabrani)
             fiksna_dostava = v_dostava / br_ucesnika
+            fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
             
             st.markdown(f"""
                 <div style="background-color: #f3e5f5; padding: 10px; border-radius: 5px; border-left: 5px solid #9c27b0; margin-bottom: 20px;">
-                    <span style="color: #4a148c;">Učešće u dostavi po osobi: <b>{f'{fiksna_dostava:.2f}'.replace('.', ',')} RSD</b></span>
+                    <span style="color: #4a148c;">Učešće u dostavi po osobi: <b>{fiksna_dostava_str} RSD</b></span>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -150,9 +157,9 @@ else:
             if abs(ostatak) < 0.01:
                 validna_podela = True
             elif ostatak > 0:
-                st.warning(f"Preostalo: **{ostatak} RSD**")
+                st.warning(f"Preostalo: **{formatiraj_broj_sa_tackom(ostatak)} RSD**")
             else:
-                st.error(f"Višak: **{abs(ostatak)} RSD**")
+                st.error(f"Višak: **{formatiraj_broj_sa_tackom(abs(ostatak))} RSD**")
         
         def obrisi_listu_callback():
             st.session_state.clanovi_univerzalni = []
@@ -178,7 +185,7 @@ if validna_podela and suma_ukupno > 0:
                 
                 _, col_qr, _ = st.columns([1, 2, 1])
                 with col_qr:
-                    zajednicki_iznos_str = f"{finalni_dugovi['Zajednički']:.2f}".replace('.', ',')
+                    zajednicki_iznos_str = formatiraj_broj_sa_tackom(finalni_dugovi['Zajednički'])
                     st.image(buf.getvalue(), caption=f"Iznos: {zajednicki_iznos_str} RSD", use_container_width=True)
             else:
                 for ime, dug in finalni_dugovi.items():
@@ -191,7 +198,8 @@ if validna_podela and suma_ukupno > 0:
                         qr_img.save(buf, format="PNG")
                         
                         with st.container(border=True):
-                            st.markdown(f"#### {ime} - {dug} RSD")
+                            dug_prikaz = formatiraj_broj_sa_tackom(dug)
+                            st.markdown(f"#### {ime} - {dug_prikaz} RSD")
                             _, col_qr_inner, _ = st.columns([1, 2, 1])
                             with col_qr_inner:
                                 st.image(buf.getvalue(), use_container_width=True)
