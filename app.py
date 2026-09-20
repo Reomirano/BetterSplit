@@ -23,6 +23,16 @@ def formatiraj_za_prikaz(racun_18_cifara):
         return f"{racun_18_cifara[:3]}-{racun_18_cifara[3:-2]}-{racun_18_cifara[-2:]}"
     return racun_18_cifara
 
+def parsiraj_broj(tekst):
+    if not tekst:
+        return 0.0
+    # Uklanjamo tačke (separator hiljada) i menjamo zarez u tačku za float konverziju
+    očišćeno = tekst.strip().replace('.', '').replace(',', '.')
+    try:
+        return float(očišćeno)
+    except ValueError:
+        return 0.0
+
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
@@ -31,18 +41,12 @@ if "reset_kljuc" not in st.session_state:
 if 'clanovi_univerzalni' not in st.session_state:
     st.session_state.clanovi_univerzalni = []
 
-# --- SIDEBAR: PODACI ---
-st.sidebar.markdown("*<span style='font-size: 0.8rem; color: gray;'>powered by Reomirano</span>*", unsafe_allow_html=True)
-st.sidebar.header("⚙️ Tvoja podešavanja")
-moje_ime = st.sidebar.text_input("Administrator:", value="", key="user_name", placeholder="Ime i prezime vlasnika računa")
-moj_racun = st.sidebar.text_input("Broj računa administratora:", value="", key="user_bank", placeholder="Broj tekućeg računa")
-
 # --- GLAVNI PANEL ---
 st.title("💰 Podela troškova")
 
 with st.expander("📖 Kako ovo radi?"):
     st.write("""
-    1. **Unesi svoj račun:** U levom meniju unesi svoje ime i broj računa (sistem sam dopunjava nule ako uneseš skraćeni broj sa kartice).
+    1. **Unesi podatke primaoca:** Upiši svoje ime i broj računa direktno u polja ispod.
     2. **Unesi iznose:** Upiši vrednost sa računa i cenu dostave.
     3. **Odaberi metodu:**
         * **Ravnopravno:** Unesi broj ljudi i dobijaš univerzalni QR kod.
@@ -50,13 +54,17 @@ with st.expander("📖 Kako ovo radi?"):
     4. **Skeniranje:** Svako otvori mBanking, odabere 'IPS' i očita kod sa ekrana (univerzalni ili lični).
     """)
 
+st.subheader("⚙️ Podaci o primaocu")
+col_p1, col_p2 = st.columns(2)
+moje_ime = col_p1.text_input("Primalac:", value="", key="user_name", placeholder="Ime i prezime")
+moj_racun = col_p2.text_input("Broj računa primaoca:", value="", key="user_bank", placeholder="Broj tekućeg računa")
+
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "Nije unet"
 
 st.markdown(f"""
-    <p style="font-size: 1.2rem; font-weight: 500; margin-top: 10px; margin-bottom: 0;">
-        🏦 Primaoc: <b>{moje_ime if moje_ime else '...'}</b><br>
-        💳 Račun: <b>{prikaz_racuna}</b>
+    <p style="font-size: 1.1rem; font-weight: 500; margin-top: 5px; margin-bottom: 0; color: gray;">
+        Validan račun: <b>{prikaz_racuna}</b>
     </p>
 """, unsafe_allow_html=True)
 
@@ -73,11 +81,11 @@ if st.button("🔄 Novi unos", use_container_width=True, type="primary"):
 
 st.subheader("✍️ Podaci o trošku")
 c1, c2 = st.columns(2)
-iznos_racuna = c1.number_input("Iznos sa računa (RSD):", min_value=0.0, step=10.0, value=None, placeholder="0,00", key=f"racun_{sufiks}")
-dostava = c2.number_input("Dostava (RSD):", min_value=0.0, step=10.0, value=None, placeholder="0,00", key=f"dostava_{sufiks}")
+s_racun_input = c1.text_input("Iznos sa računa (RSD):", value="", placeholder="npr. 1.500,50", key=f"racun_str_{sufiks}")
+s_dostava_input = c2.text_input("Dostava (RSD):", value="", placeholder="npr. 250,00", key=f"dostava_str_{sufiks}")
 
-v_racun = iznos_racuna if iznos_racuna is not None else 0.0
-v_dostava = dostava if dostava is not None else 0.0
+v_racun = parsiraj_broj(s_racun_input)
+v_dostava = parsiraj_broj(s_dostava_input)
 suma_ukupno = v_racun + v_dostava
 
 st.markdown(f"### Ukupno: {f'{suma_ukupno:.2f}'.replace('.', ',')} RSD")
@@ -129,8 +137,8 @@ else:
             
             trenutna_suma = 0.0
             for o in odabrani:
-                dug = st.number_input(f"Iznos za učesnika {o}:", min_value=0.0, step=10.0, value=None, placeholder="0,00", key=f"rucni_{o}_{sufiks}")
-                v_dug = dug if dug is not None else 0.0
+                s_dug_input = st.text_input(f"Iznos za učesnika {o} (RSD):", value="", placeholder="npr. 500,00", key=f"rucni_str_{o}_{sufiks}")
+                v_dug = parsiraj_broj(s_dug_input)
                 finalni_dugovi[o] = v_dug
                 trenutna_suma += v_dug
             
@@ -155,7 +163,7 @@ st.divider()
 if validna_podela and suma_ukupno > 0:
     if st.button("🔥 GENERIŠI QR KODOVE", use_container_width=True, type="primary"):
         if not moje_ime or not moj_racun:
-            st.error("⚠️ Popuni podatke u sidebar-u!")
+            st.error("⚠️ Popuni podatke o primaocu na vrhu strane!")
         else:
             if nacin == "Ravnopravno":
                 iz_fmt = "{:.2f}".format(finalni_dugovi['Zajednički']).replace('.', ',')
