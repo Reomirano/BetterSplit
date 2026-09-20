@@ -57,6 +57,17 @@ st.markdown("""
         opacity: 1 !important;
     }
     
+    /* Multiselect prilagođavanje */
+    .stMultiSelect div[data-baseweb="select"] {
+        background-color: #1b4332 !important;
+        border: 1px solid #2d6a4f !important;
+        border-radius: 8px !important;
+    }
+    .stMultiSelect span[data-baseweb="tag"] {
+        background-color: #2d6a4f !important;
+        color: #ffffff !important;
+    }
+    
     /* Dugmad u zelenim tonovima */
     .stButton button {
         background-color: #2d6a4f !important;
@@ -163,8 +174,8 @@ if nacin == "Ravnopravno":
         broj_ljudi = st.number_input("Ukupan broj osoba:", min_value=1, value=2, step=1, key=f"br_ljudi_{sufiks}")
         if broj_ljudi > 1:
             po_osobi = suma_ukupno / broj_ljudi
-            po_osobi_zaokruzeno = round(po_osobi, 2)
-            po_osobi_str = "{:.2f}".format(po_osobi_zaokruzeno).replace('.', ',')
+            po_osobi_zaokruzeno = round(po_osobi)
+            po_osobi_str = formatiraj_broj_sa_tackom(po_osobi_zaokruzeno)
             st.info(f"Po osobi: **{po_osobi_str} RSD**")
             finalni_dugovi["Zajednički"] = po_osobi_zaokruzeno
             validna_podela = True
@@ -193,8 +204,8 @@ else:
             
             if odabrani:
                 br_ucesnika = len(odabrani)
-                fiksna_dostava = v_dostava / br_ucesnika
-                fiksna_dostava_str = "{:.2f}".format(fiksna_dostava).replace('.', ',')
+                fiksna_dostava = round(v_dostava / br_ucesnika)
+                fiksna_dostava_str = formatiraj_broj_sa_tackom(fiksna_dostava)
                 
                 st.markdown(f"""
                     <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
@@ -239,7 +250,7 @@ if validna_podela and suma_ukupno > 0:
             st.error("⚠️ Popuni podatke o primaocu na vrhu strane!")
         else:
             if nacin == "Ravnopravno":
-                iz_fmt = "{:.2f}".format(finalni_dugovi['Zajednički']).replace('.', ',')
+                iz_fmt = "{:.2f}".format(float(finalni_dugovi['Zajednički'])).replace('.', ',')
                 ips_data = f"K:PR|V:01|C:1|R:{c_racun}|N:{moje_ime}|I:RSD{iz_fmt}|SF:289|S:Podela racuna"
                 qr_img = qrcode.make(ips_data)
                 buf = BytesIO()
