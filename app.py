@@ -136,6 +136,8 @@ sufiks = st.session_state.reset_kljuc
 if st.button("🔄 Novi unos", use_container_width=True, type="primary"):
     st.session_state.reset_kljuc += 1
     st.session_state.clanovi_univerzalni = []
+    if f"ucesnici_{sufiks}" in st.session_state:
+        del st.session_state[f"ucesnici_{sufiks}"]
     st.rerun()
 
 st.subheader("✍️ Podaci o trošku")
@@ -168,8 +170,9 @@ if nacin == "Ravnopravno":
 else:
     def dodaj_direktno():
         ime = st.session_state.novo_ime_input.strip()
-        if ime and ime not in st.session_state.clanovi_univerzalni:
-            st.session_state.clanovi_univerzalni.append(ime)
+        if ime:
+            if ime not in st.session_state.clanovi_univerzalni:
+                st.session_state.clanovi_univerzalni.append(ime)
         st.session_state.novo_ime_input = ""
 
     with st.container(border=True):
@@ -178,20 +181,12 @@ else:
         sortirani = sorted(st.session_state.clanovi_univerzalni)
         
         if sortirani:
-            st.write("Trenutni učesnici:")
-            for idx, ime in enumerate(sortirani):
-                c_ime, c_btn = st.columns([4, 1])
-                c_ime.write(f"• **{ime}**")
-                if c_btn.button("❌", key=f"del_{ime}_{sufiks}"):
-                    st.session_state.clanovi_univerzalni.remove(ime)
-                    st.rerun()
-
             br_ucesnika = len(sortirani)
             fiksna_dostava = round(v_dostava / br_ucesnika) if br_ucesnika > 0 else 0
             fiksna_dostava_str = formatiraj_broj_sa_tackom(fiksna_dostava)
             
             st.markdown(f"""
-                <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-top: 15px; margin-bottom: 20px;">
+                <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
                     <span style="color: #ffffff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
                 </div>
             """, unsafe_allow_html=True)
@@ -220,8 +215,7 @@ else:
         def obrisi_listu_callback():
             st.session_state.clanovi_univerzalni = []
 
-        if sortirani:
-            st.button("Obriši celu listu", on_click=obrisi_listu_callback)
+        st.button("Obriši celu listu", on_click=obrisi_listu_callback)
 
 # --- QR SEKCIJA ---
 st.divider()
