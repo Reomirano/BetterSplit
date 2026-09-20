@@ -57,25 +57,10 @@ st.markdown("""
         opacity: 1 !important;
     }
     
-    /* Multiselect kompletno u tamno zelenom tonu (rešenje bele pozadine) */
-    div.stMultiSelect, div[data-baseweb="select"] {
-        background-color: #1b4332 !important;
-        border: 1px solid #2d6a4f !important;
-        border-radius: 8px !important;
-    }
-    
-    .stMultiSelect div[data-baseweb="select"] > div {
-        background-color: #1b4332 !important;
-    }
-    
-    .stMultiSelect input {
-        background-color: transparent !important;
+    /* Podešavanje slova u multiselect tagovima radi bolje čitljivosti */
+    .stMultiSelect span[data-baseweb="tag"] span {
         color: #ffffff !important;
-    }
-    
-    .stMultiSelect span[data-baseweb="tag"] {
-        background-color: #2d6a4f !important;
-        color: #ffffff !important;
+        font-weight: 600 !important;
     }
     
     /* Dugmad u zelenim tonovima */
