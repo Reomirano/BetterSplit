@@ -120,14 +120,14 @@ st.title("💰 Podela troškova")
 with st.expander("Kako ovo radi?"):
     st.write("""
     1. **Unesi podatke primaoca:** Upiši svoje ime i broj računa direktno u polja ispod.
-    2. **Unesi iznose:** Upiši vrednost sa računa i cenu dostave u celim dinarima.
+    2. **Unesi iznose:** Upiši vrednost sa računa i cenu dostave.
     3. **Odaberi metodu:**
         * **Ravnopravno:** Unesi broj ljudi i dobijaš univerzalni QR kod.
         * **Ručni unos:** Dodaš imena učesnika i uneseš pojedinačnu vrednost.
     4. **Skeniranje:** Svako otvori mBanking, odabere 'IPS' i očita kod sa ekrana (univerzalni ili lični).
     """)
 
-st.subheader("⚙️ Podaci o primaocu")
+st.subheader("💳 Podaci o primaocu")
 
 with st.container(border=True):
     col_p1, col_p2 = st.columns(2)
@@ -143,7 +143,7 @@ with st.container(border=True):
 moj_racun = re.sub(r'\D', '', moj_racun_unos)
 
 c_racun = ocisti_racun(moj_racun) if moj_racun else ""
-prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "unesite račun"
+prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else ""
 
 st.markdown(f"""
     <div style="padding: 8px 12px; background-color: #1b4332; border-radius: 6px; border-left: 4px solid #52b788; margin-top: 5px; margin-bottom: 5px;">
@@ -157,7 +157,7 @@ st.divider()
 
 sufiks = st.session_state.reset_kljuc
 
-st.subheader("✍️ Podaci o trošku")
+st.subheader("🧾 Podaci o trošku")
 with st.container(border=True):
     c1, c2 = st.columns(2)
     v_racun = c1.number_input("Iznos sa računa (RSD):", min_value=0, value=0, step=1, format="%d", key=f"racun_num_{sufiks}")
