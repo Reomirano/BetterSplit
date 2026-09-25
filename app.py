@@ -29,82 +29,70 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA TAMNO ZELENU TEMU ---
+# --- CUSTOM CSS ZA KONTRASTNU EMERALD ZELENU TEMU ---
 st.markdown("""
     <style>
+    /* Osnovna pozadina i primarna boja teksta */
     .stApp {
-        background-color: #081c15;
-        color: #ffffff !important;
+        background-color: #0a1912;
+        color: #f1f5f9;
     }
     
+    /* Globalno podešavanje boja teksta */
     h1, h2, h3, h4, h5, h6, p, span, label, div, 
     .stMarkdown, .stText, [data-testid="stMarkdownContainer"] p, 
     [data-testid="stWidgetLabel"] {
+        color: #f1f5f9 !important;
+    }
+    
+    /* Input polja za unos */
+    input, textarea, select {
+        background-color: #132a20 !important;
+        color: #ffffff !important;
+        border: 1px solid #2d6a4f !important;
+        border-radius: 6px !important;
+    }
+    
+    input::placeholder, textarea::placeholder {
+        color: #74c69d !important;
+        opacity: 0.8 !important;
+    }
+    
+    /* Stilovi za dugmad */
+    .stButton button {
+        background-color: #2d6a4f !important;
+        color: #ffffff !important;
+        border-radius: 6px;
+        font-weight: 600;
+        border: none;
+        transition: background-color 0.2s ease-in-out;
+    }
+    
+    .stButton button * {
         color: #ffffff !important;
     }
     
-    /* 1. Povećanje fonta i ikonica za ekspander (Kako ovo radi?) za 50% */
-    div[data-testid="stExpander"] summary span {
-        font-size: 1.8rem !important;
-        font-weight: 700 !important;
-        color: #b7e4c7 !important;
-    }
-    div[data-testid="stExpander"] summary p::before {
-        content: "📖 ";
-        font-size: 1.95rem;
+    .stButton button:hover {
+        background-color: #40916c !important;
     }
 
-    /* 2. Povećanje fonta i paddinga za dugme Novi iznos za 50% */
-    div.stButton > button[kind="secondary"] {
-        font-size: 1.65rem !important;
-        padding: 0.9rem 1.5rem !important;
-    }
-
-    /* 5. Povećanje fonta i paddinga za dugme GENERIŠI QR KODOVE za 50% */
+    /* Primary dugme (Generiši QR) */
     div.stButton > button[kind="primary"] {
-        font-size: 1.65rem !important;
-        padding: 0.9rem 1.5rem !important;
+        background-color: #40916c !important;
     }
-
-    /* Input polja i tekstualna polja sa tamno zelenom nijansom */
-    input, textarea, select {
-        background-color: #1b4332 !important;
-        color: #ffffff !important;
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #52b788 !important;
+    }
+    
+    /* Kontejneri i ekspanderi */
+    div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #132a20 !important;
         border: 1px solid #2d6a4f !important;
         border-radius: 8px !important;
     }
     
-    input::placeholder, textarea::placeholder {
-        color: #95d5b2 !important;
-        opacity: 1 !important;
-    }
-    
-    /* Opšta dugmad u zelenim tonovima */
-    .stButton button {
-        background-color: #2d6a4f !important;
-        color: white !important;
-        border-radius: 8px;
-        font-weight: 600;
-        border: none;
-        transition: all 0.2s ease-in-out;
-    }
-    .stButton button * {
-        color: white !important;
-    }
-    .stButton button:hover {
-        background-color: #40916c !important;
-        transform: translateY(-1px);
-    }
-    
-    div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #1b4332 !important;
-        border: 1px solid #2d6a4f !important;
-        border-radius: 12px !important;
-    }
-    
     div[data-testid="stMetricValue"] {
         color: #52b788 !important;
-        font-size: 1.8rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -146,8 +134,8 @@ c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else ""
 
 st.markdown(f"""
-    <div style="padding: 8px 12px; background-color: #1b4332; border-radius: 6px; border-left: 4px solid #52b788; margin-top: 5px; margin-bottom: 5px;">
-        <span style="font-size: 1rem; font-weight: 500; color: #b7e4c7 !important;">
+    <div style="padding: 8px 12px; background-color: #132a20; border-radius: 6px; border-left: 4px solid #52b788; margin-top: 5px; margin-bottom: 5px;">
+        <span style="font-size: 0.95rem; font-weight: 500; color: #b7e4c7 !important;">
             Validan račun: <b style="color: #ffffff !important;">{prikaz_racuna}</b>
         </span>
     </div>
@@ -173,8 +161,7 @@ suma_ukupno = v_racun + v_dostava
 st.metric(label="Ukupno", value=f"{formatiraj_broj_sa_tackom(suma_ukupno)} RSD")
 st.divider()
 
-# Korišćenje st.pills komponenti umesto radio dugmića za lepši izgled kartica
-st.markdown('<p style="font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; color: #ffffff;">Metoda podele:</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: #ffffff;">Metoda podele:</p>', unsafe_allow_html=True)
 nacin = st.pills("Metoda podele:", ["Ravnopravno", "Ručni unos"], default="Ravnopravno", label_visibility="collapsed", key=f"nacin_{sufiks}")
 
 finalni_dugovi = {}
@@ -210,7 +197,7 @@ else:
             fiksna_dostava_str = formatiraj_broj_sa_tackom(round(fiksna_dostava))
             
             st.markdown(f"""
-                <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
+                <div style="background-color: #132a20; padding: 10px; border-radius: 6px; border-left: 4px solid #52b788; margin-bottom: 15px;">
                     <span style="color: #ffffff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
                 </div>
             """, unsafe_allow_html=True)
@@ -219,7 +206,7 @@ else:
             for o in list(aktivni_clanovi):
                 col_i1, col_i2, col_i3 = st.columns([2, 2, 0.6])
                 with col_i1:
-                    st.markdown(f"<p style='padding-top: 8px; font-weight: 600;'>{o}:</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='padding-top: 6px; font-weight: 500;'>{o}:</p>", unsafe_allow_html=True)
                 with col_i2:
                     v_dug = st.number_input(
                         f"Iznos_{o}", 
