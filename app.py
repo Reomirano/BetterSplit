@@ -7,129 +7,308 @@ import re
 def ocisti_racun(racun_str):
     samo_cifre = re.sub(r'\D', '', str(racun_str))
     if 5 < len(samo_cifre) < 18:
-        kod_banke = samo_cifre[:3]
-        kontrolni_broj = samo_cifre[-2:]
-        partija_racuna = samo_cifre[3:-2]
+        kod_banke = samo_cifre[:3]         
+        kontrolni_broj = samo_cifre[-2:]     
+        partija_racuna = samo_cifre[3:-2]    
         partija_sa_nulama = partija_racuna.zfill(13)
         return f"{kod_banke}{partija_sa_nulama}{kontrolni_broj}"
     return samo_cifre.zfill(18)
 
-def formatiraj_za_prikaz(racun_18):
-    if len(racun_18) == 18:
-        return f"{racun_18[:3]}-{racun_18[3:-2]}-{racun_18[-2:]}"
-    return racun_18
+def formatiraj_za_prikaz(racun_18_cifara):
+    if len(racun_18_cifara) == 18:
+        return f"{racun_18_cifara[:3]}-{racun_18_cifara[3:-2]}-{racun_18_cifara[-2:]}"
+    return racun_18_cifara
 
 def formatiraj_broj_sa_tackom(broj):
     return f"{int(broj):,}".replace(",", ".")
 
-# --- STATE ---
-if "clanovi" not in st.session_state:
-    st.session_state.clanovi = []
+# --- KONFIGURACIJA ---
+st.set_page_config(page_title="NeshatSplit", page_icon="💸", layout="centered")
 
-st.title("💰 Podela troškova")
+# --- CUSTOM CSS (MODERAN PREFINJENI DARK MODE) ---
+st.markdown("""
+    <style>
+    /* Pozadina i osnovni tekst */
+    .stApp {
+        background-color: #0f172a;
+        color: #f8fafc;
+    }
+    
+    /* Sakrivanje standardnog Streamlit zaglavlja i menija */
+    header {visibility: hidden;}
+    
+    /* Naslovi */
+    h1 {
+        font-weight: 800 !important;
+        letter-spacing: -0.025em;
+        color: #ffffff !important;
+        margin-bottom: 0.2rem !important;
+    }
+    h3, h4 {
+        color: #e2e8f0 !important;
+        font-weight: 600 !important;
+    }
 
-# --- KORAK 1: PRIMALAC ---
-st.header("1. Podaci o primaocu")
+    /* Polja za unos (Input fields) */
+    div[data-baseweb="input"] > div {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 10px !important;
+        color: #ffffff !important;
+    }
+    div[data-baseweb="input"] input {
+        color: #ffffff !important;
+    }
+    div[data-baseweb="input"]:focus-within {
+        border-color: #10b981 !important;
+    }
 
-col1, col2 = st.columns(2)
-ime = col1.text_input("Ime primaoca")
-racun_unos = col2.text_input("Broj računa (npr. 160-12345678999-12)")
+    /* Stil za Dugmad */
+    .stButton button {
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    /* Primary Dugme (Generiši QR) */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: white !important;
+        font-size: 1.1rem !important;
+        padding: 0.75rem 1.5rem !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+    div.stButton > button[kind="primary"]:hover {
+        opacity: 0.95;
+        transform: translateY(-1px);
+    }
 
-racun_cist = ocisti_racun(racun_unos) if racun_unos else ""
-validan_racun = len(racun_cist) == 18
+    /* Secondary Dugme */
+    div.stButton > button[kind="secondary"] {
+        background-color: #1e293b !important;
+        color: #cbd5e1 !important;
+        border: 1px solid #334155 !important;
+    }
+    div.stButton > button[kind="secondary"]:hover {
+        background-color: #334155 !important;
+        color: #ffffff !important;
+    }
 
-if racun_unos:
-    if validan_racun:
-        st.success(f"Validan račun: {formatiraj_za_prikaz(racun_cist)}")
-    else:
-        st.error("Nevažeći račun – proveri unos.")
-        st.stop()
+    /* Stil za Expander */
+    div[data-testid="stExpander"] {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 12px !important;
+    }
+    
+    /* Kartica sa ukupnim iznosom */
+    .total-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 1px solid #334155;
+        border-left: 5px solid #10b981;
+        padding: 18px 24px;
+        border-radius: 12px;
+        margin: 15px 0px;
+    }
+    .total-title {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .total-amount {
+        color: #10b981;
+        font-size: 2.2rem;
+        font-weight: 800;
+    }
 
-# --- KORAK 2: TROŠAK ---
-st.header("2. Podaci o trošku")
+    /* Validacioni box za račun */
+    .account-badge {
+        padding: 8px 14px;
+        background-color: #1e293b;
+        border-radius: 8px;
+        border: 1px solid #334155;
+        font-size: 0.9rem;
+        color: #94a3b8;
+        margin-top: 5px;
+    }
+    .account-badge b {
+        color: #38bdf8 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-col3, col4 = st.columns(2)
-iznos = col3.number_input("Iznos sa računa (RSD)", min_value=0, step=1)
-dostava = col4.number_input("Dostava (RSD)", min_value=0, step=1)
+if "reset_kljuc" not in st.session_state:
+    st.session_state.reset_kljuc = 0
+if 'clanovi_univerzalni' not in st.session_state:
+    st.session_state.clanovi_univerzalni = []
 
-ukupno = iznos + dostava
-st.metric("Ukupno", f"{formatiraj_broj_sa_tackom(ukupno)} RSD")
+# --- GLAVNI PANEL ---
+st.title("💸 NeshatSplit")
+st.caption("Brza podela računa i generisanje IPS QR kodova za prenos")
 
-if ukupno == 0:
-    st.warning("Unesi iznos da bi nastavio.")
-    st.stop()
+with st.expander("📖 Uputstvo za korišćenje"):
+    st.write("""
+    1. **Primalac:** Unesi ime i broj tekućeg računa na koji uplate treba da legnu.
+    2. **Iznosi:** Upiši cifru sa računa i cenu dostave.
+    3. **Izbor metode:** Odaberi ravnopravnu podelu ili podelu po stavkama za svakog učesnika.
+    4. **Plaćanje:** Prikaži QR kod i skenirajte ga direktno kroz bilo koju mBanking aplikaciju (opcija IPS pokaži/izvrši).
+    """)
 
-# --- KORAK 3: METODA ---
-st.header("3. Metoda podele")
-metoda = st.radio("Odaberi:", ["Ravnopravno", "Ručni unos"])
+st.write("")
+st.subheader("💳 Podaci o primaocu")
+
+col_p1, col_p2 = st.columns(2)
+moje_ime = col_p1.text_input("Ime i prezime", value="", key="user_name", placeholder="Petar Petrović")
+moj_racun_unos = col_p2.text_input("Broj računa", value="", key="user_bank", placeholder="160-12345678999-12")
+
+moj_racun = re.sub(r'\D', '', moj_racun_unos)
+c_racun = ocisti_racun(moj_racun) if moj_racun else ""
+prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else "Nije unet"
+
+st.markdown(f"""
+    <div class="account-badge">
+        Validiran IPS račun: <b>{prikaz_racuna}</b>
+    </div>
+""", unsafe_allow_html=True)
+
+st.write("")
+st.subheader("🧾 Podaci o trošku")
+
+sufiks = st.session_state.reset_kljuc
+
+c1, c2 = st.columns(2)
+v_racun = c1.number_input("Iznos računa (RSD)", min_value=0, value=0, step=10, format="%d", key=f"racun_num_{sufiks}")
+v_dostava = c2.number_input("Dostava (RSD)", min_value=0, value=0, step=10, format="%d", key=f"dostava_num_{sufiks}")
+
+suma_ukupno = v_racun + v_dostava
+
+# Kartica sa ukupnim iznosom
+st.markdown(f"""
+    <div class="total-card">
+        <div class="total-title">Ukupan iznos za podelu</div>
+        <div class="total-amount">{formatiraj_broj_sa_tackom(suma_ukupno)} <span style="font-size: 1.2rem;">RSD</span></div>
+    </div>
+""", unsafe_allow_html=True)
+
+col_reset, _ = st.columns([1, 2])
+with col_reset:
+    if st.button("🔄 Resetuj iznose", use_container_width=True):
+        st.session_state.reset_kljuc += 1
+        st.session_state.clanovi_univerzalni = []
+        st.rerun()
+
+st.write("")
+st.subheader("⚙️ Metoda podele")
+nacin = st.pills("Metoda podele:", ["Ravnopravno", "Ručni unos"], default="Ravnopravno", label_visibility="collapsed", key=f"nacin_{sufiks}")
 
 finalni_dugovi = {}
+validna_podela = False
 
-# --- KORAK 4A: RAVNOPRAVNO ---
-if metoda == "Ravnopravno":
-    br = st.number_input("Broj osoba", min_value=1, step=1)
-    if br > 0:
-        po_osobi = round(ukupno / br)
-        st.info(f"Po osobi: {formatiraj_broj_sa_tackom(po_osobi)} RSD")
-        finalni_dugovi["Zajednički"] = po_osobi
+if nacin == "Ravnopravno":
+    broj_ljudi = st.number_input("Broj osoba koje dele račun:", min_value=1, value=2, step=1, key=f"br_ljudi_{sufiks}")
+    if broj_ljudi > 0:
+        po_osobi = suma_ukupno / broj_ljudi
+        po_osobi_zaokruzeno = round(po_osobi)
+        po_osobi_str = formatiraj_broj_sa_tackom(po_osobi_zaokruzeno)
+        
+        st.info(f"Svaka osoba plaća: **{po_osobi_str} RSD**")
+        finalni_dugovi["Zajednički"] = po_osobi_zaokruzeno
+        validna_podela = True
 
-# --- KORAK 4B: RUČNI UNOS ---
 else:
-    def dodaj_clana():
-        ime_novo = st.session_state.novi_clan.strip()
-        if ime_novo and ime_novo not in st.session_state.clanovi:
-            st.session_state.clanovi.append(ime_novo)
-        st.session_state.novi_clan = ""
+    def dodaj_direktno():
+        ime = st.session_state.novo_ime_input.strip()
+        if ime and ime not in st.session_state.clanovi_univerzalni:
+            st.session_state.clanovi_univerzalni.append(ime)
+        st.session_state.novo_ime_input = ""
 
-    st.text_input("Dodaj učesnika (Enter)", key="novi_clan", on_change=dodaj_clana)
-
-    suma_rucno = 0
-    for c in list(st.session_state.clanovi):
-        col_a, col_b, col_c = st.columns([2, 2, 1])
-        col_a.write(f"**{c}**")
-        dug = col_b.number_input(f"Iznos_{c}", min_value=0, step=1, label_visibility="collapsed", key=f"dug_{c}")
-        suma_rucno += dug
-        finalni_dugovi[c] = dug
-
-        if col_c.button("❌", key=f"del_{c}"):
-            st.session_state.clanovi.remove(c)
-            st.session_state.pop(f"dug_{c}", None)
-            st.rerun()
-
-    ostatak = ukupno - suma_rucno
-    if st.session_state.clanovi:
+    st.text_input("Dodaj učesnika (Enter za potvrdu):", key="novo_ime_input", on_change=dodaj_direktno, placeholder="Npr. Marko")
+    
+    aktivni_clanovi = st.session_state.clanovi_univerzalni
+    
+    if aktivni_clanovi:
+        br_ucesnika = len(aktivni_clanovi)
+        fiksna_dostava = v_dostava / br_ucesnika if br_ucesnika > 0 else 0
+        fiksna_dostava_str = formatiraj_broj_sa_tackom(round(fiksna_dostava))
+        
+        st.caption(f"💡 Učešće u dostavi po osobi iznosi: **{fiksna_dostava_str} RSD**")
+        
+        trenutna_suma = 0
+        for o in list(aktivni_clanovi):
+            col_i1, col_i2, col_i3 = st.columns([2, 2, 0.5])
+            with col_i1:
+                st.markdown(f"<p style='padding-top: 10px; font-weight: 500;'>{o}</p>", unsafe_allow_html=True)
+            with col_i2:
+                v_dug = st.number_input(
+                    f"Iznos_{o}", 
+                    min_value=0, 
+                    value=0, 
+                    step=10, 
+                    format="%d", 
+                    label_visibility="collapsed",
+                    key=f"rucni_num_{o}_{sufiks}"
+                )
+            with col_i3:
+                if st.button("❌", key=f"obrisi_{o}_{sufiks}", help=f"Ukloni {o}"):
+                    st.session_state.clanovi_univerzalni.remove(o)
+                    if f"rucni_num_{o}_{sufiks}" in st.session_state:
+                        del st.session_state[f"rucni_num_{o}_{sufiks}"]
+                    st.rerun()
+            
+            finalni_dugovi[o] = v_dug
+            trenutna_suma += v_dug
+        
+        ostatak = suma_ukupno - trenutna_suma
         if abs(ostatak) < 0.01:
-            st.success("Podela je validna.")
+            validna_podela = True
         elif ostatak > 0:
-            st.warning(f"Nedostaje: {formatiraj_broj_sa_tackom(ostatak)} RSD")
-            st.stop()
+            st.warning(f"Preostalo za raspodelu: **{formatiraj_broj_sa_tackom(ostatak)} RSD**")
         else:
-            st.error(f"Višak: {formatiraj_broj_sa_tackom(abs(ostatak))} RSD")
-            st.stop()
+            st.error(f"Zbir prekoračuje ukupan račun za: **{formatiraj_broj_sa_tackom(abs(ostatak))} RSD**")
+        
+        def obrisi_listu_callback():
+            st.session_state.clanovi_univerzalni = []
 
-# --- KORAK 5: QR ---
-st.header("5. QR kodovi")
+        st.button("Obriši celu listu", on_click=obrisi_listu_callback)
 
-if st.button("GENERISI QR"):
-    if not ime or not validan_racun:
-        st.error("Popuni ime i račun.")
-        st.stop()
-
-    if metoda == "Ravnopravno":
-        iz_fmt = "{:.2f}".format(finalni_dugovi["Zajednički"]).replace(".", ",")
-        data = f"K:PR|V:01|C:1|R:{racun_cist}|N:{ime}|I:RSD{iz_fmt}|SF:289|S:Podela"
-        img = qrcode.make(data)
-        buf = BytesIO()
-        img.save(buf, format="PNG")
-        st.image(buf.getvalue(), caption=f"Iznos: {finalni_dugovi['Zajednički']} RSD")
-
-    else:
-        for c, dug in finalni_dugovi.items():
-            if dug > 0:
-                iz_fmt = "{:.2f}".format(dug).replace(".", ",")
-                data = f"K:PR|V:01|C:1|R:{racun_cist}|N:{ime}|I:RSD{iz_fmt}|SF:289|S:{c}"
-                img = qrcode.make(data)
+# --- QR SEKCIJA ---
+st.write("")
+if validna_podela and suma_ukupno > 0:
+    if st.button("⚡ GENERIŠI QR KODOVE", use_container_width=True, type="primary"):
+        if not moje_ime or not moj_racun:
+            st.error("⚠️ Unesite ime i broj računa primaoca na vrhu stranice!")
+        else:
+            st.subheader("📱 Kodovi za skeniranje")
+            
+            if nacin == "Ravnopravno":
+                iz_fmt = "{:.2f}".format(float(finalni_dugovi['Zajednički'])).replace('.', ',')
+                ips_data = f"K:PR|V:01|C:1|R:{c_racun}|N:{moje_ime}|I:RSD{iz_fmt}|SF:289|S:Podela racuna"
+                qr_img = qrcode.make(ips_data)
                 buf = BytesIO()
-                img.save(buf, format="PNG")
-                st.subheader(f"{c} – {dug} RSD")
-                st.image(buf.getvalue())
+                qr_img.save(buf, format="PNG")
+                
+                _, col_qr, _ = st.columns([1, 2, 1])
+                with col_qr:
+                    zajednicki_iznos_str = formatiraj_broj_sa_tackom(finalni_dugovi['Zajednički'])
+                    st.image(buf.getvalue(), caption=f"Iznos po osobi: {zajednicki_iznos_str} RSD", use_container_width=True)
+            else:
+                for ime, dug in finalni_dugovi.items():
+                    if dug > 0:
+                        iz_fmt = "{:.2f}".format(float(dug)).replace('.', ',')
+                        ips_data = f"K:PR|V:01|C:1|R:{c_racun}|N:{moje_ime}|I:RSD{iz_fmt}|SF:289|S:Rucak-{ime}"
+                        qr_img = qrcode.make(ips_data)
+                        buf = BytesIO()
+                        qr_img.save(buf, format="PNG")
+                        
+                        dug_prikaz = formatiraj_broj_sa_tackom(dug)
+                        st.markdown(f"#### {ime} • `{dug_prikaz} RSD`")
+                        
+                        _, col_qr_inner, _ = st.columns([1, 2, 1])
+                        with col_qr_inner:
+                            st.image(buf.getvalue(), use_container_width=True)
+
+st.write("") 
+st.caption("**Napomena:** Aplikacija generiše standardizovane kodove za **IPS NBS** sistem. Proverite tačnost podataka pre slanja uplate.")
