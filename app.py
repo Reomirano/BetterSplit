@@ -29,8 +29,22 @@ def formatiraj_broj_sa_tackom(broj):
 # --- KONFIGURACIJA ---
 st.set_page_config(page_title="Podela troškova", layout="centered")
 
-# --- CUSTOM CSS ZA TAMNO ZELENU TEMU ---
-st.markdown("""
+if "reset_kljuc" not in st.session_state:
+    st.session_state.reset_kljuc = 0
+if "clanovi_univerzalni" not in st.session_state:
+    st.session_state.clanovi_univerzalni = []
+if "tema_dark" not in st.session_state:
+    st.session_state.tema_dark = True
+
+# --- LIGHT / DARK TOGGLE ---
+top_col1, top_col2 = st.columns([3, 1])
+with top_col1:
+    st.title("💰 Podela troškova")
+with top_col2:
+    st.session_state.tema_dark = st.toggle("Dark mode", value=st.session_state.tema_dark)
+
+# --- CSS ZA TEME ---
+css_dark = """
     <style>
     .stApp {
         background-color: #081c15;
@@ -42,8 +56,7 @@ st.markdown("""
     [data-testid="stWidgetLabel"] {
         color: #ffffff !important;
     }
-    
-    /* 1. Povećanje fonta i ikonica za ekspander (Kako ovo radi?) za 50% */
+
     div[data-testid="stExpander"] summary span {
         font-size: 1.8rem !important;
         font-weight: 700 !important;
@@ -54,19 +67,12 @@ st.markdown("""
         font-size: 1.95rem;
     }
 
-    /* 2. Povećanje fonta i paddinga za dugme Novi iznos za 50% */
-    div.stButton > button[kind="secondary"] {
-        font-size: 1.65rem !important;
-        padding: 0.9rem 1.5rem !important;
-    }
-
-    /* 5. Povećanje fonta i paddinga za dugme GENERIŠI QR KODOVE za 50% */
+    div.stButton > button[kind="secondary"],
     div.stButton > button[kind="primary"] {
         font-size: 1.65rem !important;
         padding: 0.9rem 1.5rem !important;
     }
 
-    /* Input polja i tekstualna polja sa tamno zelenom nijansom */
     input, textarea, select {
         background-color: #1b4332 !important;
         color: #ffffff !important;
@@ -79,7 +85,6 @@ st.markdown("""
         opacity: 1 !important;
     }
     
-    /* Opšta dugmad u zelenim tonovima */
     .stButton button {
         background-color: #2d6a4f !important;
         color: white !important;
@@ -107,24 +112,88 @@ st.markdown("""
         font-size: 1.8rem;
     }
     </style>
-""", unsafe_allow_html=True)
+"""
 
-if "reset_kljuc" not in st.session_state:
-    st.session_state.reset_kljuc = 0
-if 'clanovi_univerzalni' not in st.session_state:
-    st.session_state.clanovi_univerzalni = []
+css_light = """
+    <style>
+    .stApp {
+        background-color: #f8f9fa;
+        color: #1b4332 !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6, p, span, label, div, 
+    .stMarkdown, .stText, [data-testid="stMarkdownContainer"] p, 
+    [data-testid="stWidgetLabel"] {
+        color: #1b4332 !important;
+    }
 
-# --- GLAVNI PANEL ---
-st.title("💰 Podela troškova")
+    div[data-testid="stExpander"] summary span {
+        font-size: 1.8rem !important;
+        font-weight: 700 !important;
+        color: #2d6a4f !important;
+    }
+    div[data-testid="stExpander"] summary p::before {
+        content: "📖 ";
+        font-size: 1.95rem;
+    }
+
+    div.stButton > button[kind="secondary"],
+    div.stButton > button[kind="primary"] {
+        font-size: 1.65rem !important;
+        padding: 0.9rem 1.5rem !important;
+    }
+
+    input, textarea, select {
+        background-color: #ffffff !important;
+        color: #1b4332 !important;
+        border: 1px solid #d8f3dc !important;
+        border-radius: 8px !important;
+    }
+    
+    input::placeholder, textarea::placeholder {
+        color: #74c69d !important;
+        opacity: 1 !important;
+    }
+    
+    .stButton button {
+        background-color: #74c69d !important;
+        color: #1b4332 !important;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s ease-in-out;
+    }
+    .stButton button * {
+        color: #1b4332 !important;
+    }
+    .stButton button:hover {
+        background-color: #52b788 !important;
+        transform: translateY(-1px);
+    }
+    
+    div[data-testid="stExpander"], div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #ffffff !important;
+        border: 1px solid #d8f3dc !important;
+        border-radius: 12px !important;
+    }
+    
+    div[data-testid="stMetricValue"] {
+        color: #2d6a4f !important;
+        font-size: 1.8rem;
+    }
+    </style>
+"""
+
+st.markdown(css_dark if st.session_state.tema_dark else css_light, unsafe_allow_html=True)
 
 with st.expander("Kako ovo radi?"):
     st.write("""
-    1. **Unesi podatke primaoca:** Upiši svoje ime i broj računa direktno u polja ispod.
-    2. **Unesi iznose:** Upiši vrednost sa računa i cenu dostave.
-    3. **Odaberi metodu:**
-        * **Ravnopravno:** Unesi broj ljudi i dobijaš univerzalni QR kod.
-        * **Ručni unos:** Dodaš imena učesnika i uneseš pojedinačnu vrednost.
-    4. **Skeniranje:** Svako otvori mBanking, odabere 'IPS' i očita kod sa ekrana (univerzalni ili lični).
+    1. Unesi podatke primaoca (ime i broj računa).
+    2. Unesi iznos sa računa i cenu dostave.
+    3. Odaberi metodu:
+       - Ravnopravno: broj ljudi, univerzalni QR kod.
+       - Ručni unos: imena učesnika i pojedinačni iznosi.
+    4. Svako u mBankingu odabere IPS i očita svoj QR kod.
     """)
 
 st.subheader("💳 Podaci o primaocu")
@@ -146,9 +215,9 @@ c_racun = ocisti_racun(moj_racun) if moj_racun else ""
 prikaz_racuna = formatiraj_za_prikaz(c_racun) if c_racun else ""
 
 st.markdown(f"""
-    <div style="padding: 8px 12px; background-color: #1b4332; border-radius: 6px; border-left: 4px solid #52b788; margin-top: 5px; margin-bottom: 5px;">
+    <div style="padding: 8px 12px; background-color: {'#1b4332' if st.session_state.tema_dark else '#ffffff'}; border-radius: 6px; border-left: 4px solid #52b788; margin-top: 5px; margin-bottom: 5px;">
         <span style="font-size: 1rem; font-weight: 500; color: #b7e4c7 !important;">
-            Validan račun: <b style="color: #ffffff !important;">{prikaz_racuna}</b>
+            Validan račun: <b style="color: {'#ffffff' if st.session_state.tema_dark else '#1b4332'} !important;">{prikaz_racuna}</b>
         </span>
     </div>
 """, unsafe_allow_html=True)
@@ -173,8 +242,7 @@ suma_ukupno = v_racun + v_dostava
 st.metric(label="Ukupno", value=f"{formatiraj_broj_sa_tackom(suma_ukupno)} RSD")
 st.divider()
 
-# Korišćenje st.pills komponenti umesto radio dugmića za lepši izgled kartica
-st.markdown('<p style="font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; color: #ffffff;">Metoda podele:</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-size: 1.35rem; font-weight: 700; margin-bottom: 8px;">Metoda podele:</p>', unsafe_allow_html=True)
 nacin = st.pills("Metoda podele:", ["Ravnopravno", "Ručni unos"], default="Ravnopravno", label_visibility="collapsed", key=f"nacin_{sufiks}")
 
 finalni_dugovi = {}
@@ -210,8 +278,8 @@ else:
             fiksna_dostava_str = formatiraj_broj_sa_tackom(round(fiksna_dostava))
             
             st.markdown(f"""
-                <div style="background-color: #1b4332; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
-                    <span style="color: #ffffff !important;">Učešće u dostavi po osobi: <b style="color: #ffffff !important;">{fiksna_dostava_str} RSD</b></span>
+                <div style="background-color: {'#1b4332' if st.session_state.tema_dark else '#ffffff'}; padding: 12px; border-radius: 8px; border-left: 5px solid #52b788; margin-bottom: 20px;">
+                    <span>Učešće u dostavi po osobi: <b>{fiksna_dostava_str} RSD</b></span>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -254,7 +322,7 @@ else:
             st.write("")
             st.button("Obriši celu listu", on_click=obrisi_listu_callback)
 
-# --- QR SEKCIJA ---
+# --- QR SEKCIJA + LINK-SHARE ---
 st.divider()
 if validna_podela and suma_ukupno > 0:
     if st.button("⚡ GENERIŠI QR KODOVE", use_container_width=True, type="primary"):
@@ -290,7 +358,18 @@ if validna_podela and suma_ukupno > 0:
                             with col_qr_inner:
                                 st.image(buf.getvalue(), use_container_width=True)
 
+            # LINK-SHARE PANEL
+            base_url = "https://bettersplit.streamlit.app"
+            mode_param = "ravnopravno" if nacin == "Ravnopravno" else "rucni"
+            link_share_url = f"{base_url}?mode={mode_param}&racun={v_racun}&dostava={v_dostava}"
+
+            with st.container(border=True):
+                st.markdown("#### Pošalji link drugima")
+                st.write("Kopiraj link ispod i pošalji u Viber/WhatsApp:")
+                st.text_input("Link za deljenje:", value=link_share_url, key="share_link", label_visibility="collapsed")
+                st.caption("Link ne sadrži imena niti broj tekućeg, samo iznos i način podele.")
+
 st.write("") 
 st.divider() 
-st.caption("**Napomena:** Aplikacija je namenjena isključivo za plaćanja u okviru **IPS sistema Narodne banke Srbije**. Pre potvrde plaćanja, obavezno **proverite ispravnost podataka**. Autor ne snosi odgovornost za pogrešne uplate.")
-st.caption("**Disclaimer:** This app is designed solely for **Serbian IPS payments**. Please verify all details before confirming. The author is not responsible for any incorrect payments.")
+st.caption("Napomena: Aplikacija je namenjena isključivo za plaćanja u okviru IPS sistema Narodne banke Srbije. Pre potvrde plaćanja, obavezno proverite ispravnost podataka. Autor ne snosi odgovornost za pogrešne uplate.")
+st.caption("Disclaimer: This app is designed solely for Serbian IPS payments. Please verify all details before confirming. The author is not responsible for any incorrect payments.")
